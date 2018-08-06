@@ -59,7 +59,7 @@ namespace Ministone.GameCore.GameData
                 int spIdx = containLv.IndexOf(',');
                 mapData.start_level = containLv.Substring(0, spIdx).ToInt32();
                 mapData.end_level = containLv.Substring(spIdx + 1).ToInt32();
-                mapData.level_count = mapData.end_level - mapData.start_level;
+                mapData.level_count = mapData.end_level - mapData.start_level  + 1;
 
                 //cloumnName = reader.GetName(column);
                 object value = reader.GetValue(column++);
