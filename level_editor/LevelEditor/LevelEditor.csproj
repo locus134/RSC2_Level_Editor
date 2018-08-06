@@ -1,0 +1,137 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{371EDD0A-FE13-4725-8970-8B5951494414}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>LevelEditor</RootNamespace>
+    <AssemblyName>LevelEditor</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="glade-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Mono.Posix" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Mac">
+      <HintPath>..\packages\System.Data.SQLite.Mac.1.0.104.2\lib\net45\System.Data.SQLite.Mac.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="add20.png">
+      <IncludeInPackage>true</IncludeInPackage>
+      <LogicalName>add_icon.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="question.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="MainWindow.cs" />
+    <Compile Include="gtk-gui\MainWindow.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LevelDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.LevelDialog.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="Ministone\GameCore\GameData\LevelData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\MapData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\Generic.cs" />
+    <Compile Include="Ministone\GameCore\GameData\FoodData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\CustomerData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\OrderData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\OrderDataManager.cs" />
+    <Compile Include="Ministone\GameCore\GameData\FoodDataManager.cs" />
+    <Compile Include="Ministone\GameCore\GameData\IngredientData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\IngredientDataManager.cs" />
+    <Compile Include="Ministone\GameCore\GameData\CustomerDataManager.cs" />
+    <Compile Include="Ministone\GameCore\GameData\CookwareData.cs" />
+    <Compile Include="Ministone\GameCore\GameData\CookwareDataManager.cs" />
+    <Compile Include="Ministone\GameCore\GameData\MapDataManager.cs" />
+    <Compile Include="OrderEditor.cs" />
+    <Compile Include="gtk-gui\LevelEditor.OrderEditor.cs" />
+    <Compile Include="NewOrderDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.NewOrderDialog.cs" />
+    <Compile Include="AppConfig.cs" />
+    <Compile Include="Ministone\GameCore\GameData\LevelDataManager.cs" />
+    <Compile Include="CustomerSelectDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.CustomerSelectDialog.cs" />
+    <Compile Include="RequirementEditDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.RequirementEditDialog.cs" />
+    <Compile Include="CustomerRequirementDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.CustomerRequirementDialog.cs" />
+    <Compile Include="FoodRequirementDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.FoodRequirementDialog.cs" />
+    <Compile Include="FailTipsEditDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.FailTipsEditDialog.cs" />
+    <Compile Include="UnlockItemsDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.UnlockItemsDialog.cs" />
+    <Compile Include="LevelRewardsDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.LevelRewardsDialog.cs" />
+    <Compile Include="FoodSelectDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.FoodSelectDialog.cs" />
+    <Compile Include="SecretCustomerEditDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.SecretCustomerEditDialog.cs" />
+    <Compile Include="Ministone\GameCore\GameData\LevelDataGenerator.cs" />
+    <Compile Include="FoodWeightSelectDialog.cs" />
+    <Compile Include="gtk-gui\LevelEditor.FoodWeightSelectDialog.cs" />
+    <Compile Include="Ministone\GameCore\GameData\SqlUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Ministone\" />
+    <Folder Include="Ministone\GameCore\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="App.config" />
+    <None Include="libsqlite3.dylib" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
