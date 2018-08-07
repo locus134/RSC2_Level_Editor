@@ -16,7 +16,7 @@ namespace LevelEditor
         CustomerDataManager _custMgr = CustomerDataManager.GetInstance();
         OrderDataManager _orderMgr = OrderDataManager.GetInstance();
         LevelDataManager _lvlMgr = LevelDataManager.GetInstance();
-        string m_levelFileDir;
+        //string m_levelFileDir;
 
         int m_curLevelId;
         int m_maxLevelId;
@@ -27,16 +27,16 @@ namespace LevelEditor
         ListStore m_orderListStore;
         Pixbuf ADD_ICON;
 
-        public LevelDialog(Gtk.Window parent, string restaurant, string levelFileDir)
+        public LevelDialog(Gtk.Window parent, string mapKey)
         {
-            m_levelFileDir = levelFileDir;
+            //m_levelFileDir = levelFileDir;
 
             this.Build();
             this.TransientFor = parent;
             this.SetPosition(WindowPosition.CenterAlways);
 
             // 读取餐厅数据
-            m_curRestData = _restMgr.GetRestaurant(restaurant);
+            m_curRestData = _restMgr.GetMapData(mapKey);
             m_allLevelData = _lvlMgr.GetAllLevels(m_curRestData.key);
             if (m_allLevelData == null)
             {
@@ -106,7 +106,8 @@ namespace LevelEditor
             label_level_range.Text = string.Format("关卡ID范围：1-{0}", m_maxLevelId);
             for (int i = 1; i <= m_curRestData.level_count; ++i)
             {
-                combobox_level_id.AppendText(i.ToString());
+                string level = string.Format("{0}({1})", i, i + m_curRestData.start_level -1);
+                combobox_level_id.AppendText(level);
             }
             combobox_level_id.Active = 0;
 
@@ -137,7 +138,7 @@ namespace LevelEditor
 
             combobox_config_type.Active = 0;
             text_config_total.Text = "0";
-            text_config_score.Text = "0";
+            text_config_score.Text = "3000;3500;4000";
             text_config_max_order.Text = "0";
             text_config_full_patience.Text = "0";
             text_config_order_interval_start.Text = "0";
@@ -178,7 +179,7 @@ namespace LevelEditor
         {
             combobox_config_type.Active = (int)(m_curLevelData.type - 1);
             text_config_total.Text = m_curLevelData.total.ToString();
-            text_config_score.Text = m_curLevelData.score.ToString();
+            text_config_score.Text = string.Format("{0};{1};{2}", m_curLevelData.scoreList[0], m_curLevelData.scoreList[1], m_curLevelData.scoreList[2]);
             text_config_max_order.Text = m_curLevelData.max_order.ToString();
             text_config_full_patience.Text = m_curLevelData.full_patience_num.ToString();
             text_config_order_interval_start.Text = m_curLevelData.order_interval.min.ToString();
@@ -211,17 +212,69 @@ namespace LevelEditor
 
             if (m_curLevelData.secret_customers.Count > 0)
             {
-                text_secret_customers.Text = JsonConvert.SerializeObject(m_curLevelData.secret_customers);
+                //text_secret_customers.Text = JsonConvert.SerializeObject(m_curLevelData.secret_customers);
+                string showStr = "";
+                foreach(SecretCustomer secret in m_curLevelData.secret_customers)
+                {
+                    showStr += secret.customer;
+                    if(secret.showOrders.Count > 0)
+                    {
+                        string showOrders = ConvertList.List2String(secret.showOrders, ',');
+                        showStr += "<" + showOrders + ">";
+                    }
+
+                    showStr += ";";
+                }
+                if (showStr.Length > 0) showStr = showStr.Substring(0, showStr.Length - 1);
+                text_secret_customers.Text = showStr;
             }
             else
             {
                 text_secret_customers.Text = "";
             }
-            text_level_requirements.Text = JsonConvert.SerializeObject(m_curLevelData.requirements);
+
+            string requireStr = "";
+            if(m_curLevelData.requirements.requiredCustomers.Count > 0)
+            {
+                foreach(var req in m_curLevelData.requirements.requiredCustomers)
+                {
+                    requireStr += string.Format("{0}*{1};", req.name, req.number); 
+                }
+            }else if(m_curLevelData.requirements.requiredFoods.Count > 0){
+                foreach (var req in m_curLevelData.requirements.requiredFoods)
+                {
+                    requireStr += string.Format("{0}*{1};", req.name, req.number);
+                }
+            }else if(!m_curLevelData.requirements.allowBurn){
+                requireStr += "no_burn;";
+            }else if (!m_curLevelData.requirements.allowLostCustomer)
+            {
+                requireStr += "no_lost;";
+            }else if (m_curLevelData.requirements.smileCount > 0)
+            {
+                requireStr += "smile*" + m_curLevelData.requirements.smileCount + ";";
+            }
+            if(requireStr.Length > 0)
+            {
+                requireStr = requireStr.Substring(0, requireStr.Length - 1);
+            }
+            text_level_requirements.Text = requireStr;
+
             text_min_instruct_steps.Text = m_curLevelData.min_instruct_steps.ToString();
+
             if (m_curLevelData.unlock_items.Count > 0)
             {
-                text_unlock_item.Text = JsonConvert.SerializeObject(m_curLevelData.unlock_items);
+                //text_unlock_item.Text = JsonConvert.SerializeObject(m_curLevelData.unlock_items);
+                string unlocks = "";
+                foreach(int id in m_curLevelData.unlock_items)
+                {
+                    unlocks += id.ToString() + ";";
+                }
+                if(unlocks.Length > 0)
+                {
+                    unlocks = unlocks.Substring(0, unlocks.Length - 1);
+                }
+                text_unlock_item.Text = unlocks;
             }
             else
             {
@@ -230,7 +283,14 @@ namespace LevelEditor
 
             if (m_curLevelData.rewards.Count > 0)
             {
-                text_level_rewards.Buffer.Text = JsonConvert.SerializeObject(m_curLevelData.rewards);
+                //text_level_rewards.Buffer.Text = JsonConvert.SerializeObject(m_curLevelData.rewards);
+
+                string rewards = "";
+                foreach (RewardData reward in m_curLevelData.rewards)
+                {
+                    rewards += reward.itemKey + "*" + reward.itemCount + ";";
+                }
+                if (rewards.Length > 0) rewards = rewards.Substring(0, rewards.Length - 1);
             }
             else
             {
@@ -259,12 +319,24 @@ namespace LevelEditor
             }
             levelData.total = intNum;
 
-            if (!int.TryParse(text_config_score.Text, out intNum) || intNum <= 0)
+            //if (!int.TryParse(text_config_score.Text, out intNum) || intNum <= 0)
+            //{
+            //    errMsg = "请输入正确的分数值";
+            //    goto err_return;
+            //}
+            //levelData.score = intNum;
+
+            //if (!List<int>.TryParse(text_config_score.Text, out intNum) || intNum <= 0)
+            string scoreText = text_config_score.Text;
+            bool hasSptChar = scoreText.Contains(";");
+            string[] scoreList = scoreText.Split(';');
+            if(hasSptChar && scoreList.Length == 3)
             {
                 errMsg = "请输入正确的分数值";
                 goto err_return;
             }
-            levelData.score = intNum;
+            levelData.scoreList = new List<string>(scoreList);
+
 
             if (!int.TryParse(text_config_max_order.Text, out intNum) || intNum <= 0)
             {
@@ -523,7 +595,7 @@ namespace LevelEditor
             for (int i = 0; i < m_allLevelData.Count; ++i)
             {
                 LevelData lv = m_allLevelData[i];
-                if (lv.id == levelId)
+                if (lv.id == levelId + m_curRestData.start_level - 1)
                 {
                     lvd = lv;
                     break;
@@ -865,10 +937,10 @@ namespace LevelEditor
                 {
                     m_allLevelData.Add(m_curLevelData);
                 }
-                _lvlMgr.SetRestauranttLevelData(m_curRestData.key, m_allLevelData);
+                _lvlMgr.SetMapLevelDatas(m_curRestData.key, m_allLevelData);
                 string jsonStr = _lvlMgr.GetJsonString(m_curRestData.key);
-                string path = m_levelFileDir + m_curRestData.key + ".json";
-                File.WriteAllText(path, jsonStr);
+                //string path = m_levelFileDir + m_curRestData.key + ".json";
+                //File.WriteAllText(path, jsonStr);
 
                 MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Close,
                                                       "保存成功！");
@@ -1243,12 +1315,12 @@ namespace LevelEditor
             if (errMsg == null)
             {
                 LevelDataGenerator generator = new LevelDataGenerator();
-                int score;
+                List<string> scoreList;
                 Requirements requirements;
-                if (generator.GenerateRequirements(m_curLevelData.orders, autoGenConfig, out score, out requirements))
+                if (generator.GenerateRequirements(m_curLevelData.orders, autoGenConfig, out scoreList, out requirements))
                 {
                     m_curLevelData.requirements = requirements;
-                    m_curLevelData.score = score;
+                    m_curLevelData.scoreList = scoreList;
                     ShowData();
                 }
             }

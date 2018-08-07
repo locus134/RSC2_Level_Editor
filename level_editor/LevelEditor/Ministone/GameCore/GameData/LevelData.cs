@@ -31,11 +31,18 @@ namespace Ministone.GameCore.GameData
             rate = r;
             limit = l;
         }
+
+        public void set(float intv, float r, float l = -1)
+        {
+            interval = intv;
+            rate = r;
+            limit = l;
+        }
     }
 
     public class RewardData
     {
-        public int itemID;                          // 奖励的物品ID
+        public string itemKey;                      // 奖励的物品ID
         public int itemCount;                       // 奖励的物品数量
     }
 
@@ -46,6 +53,7 @@ namespace Ministone.GameCore.GameData
         public string customer;                     // 顾客名称
         public List<string> foods = new List<string>();                  // 所点的食物列表
         public RangeData<int> interval = new RangeData<int>(0, 0);             // 出现的间隔
+        public string randomFoodStep = "";
     }
 
     public class FailTipData
@@ -58,19 +66,26 @@ namespace Ministone.GameCore.GameData
     public class SecretCustomer
     {
         public string customer;
-        public int showOrder;                 // 第几次出现之前都会显示订单
+        public bool isRemind;               //  是否会刚出订单时显示食物，然后再变成问号
+        public List<int> showOrders = new List<int>();               // 第几次出现之前都会显示订单
     }
 
     public class Requirements
     {
         public class NameAndNumber
         {
+            public NameAndNumber() { name = ""; number = 0; }
+            public NameAndNumber(string _name, int _num)
+            {
+                name = _name;
+                number = _num;
+            }
             public string name;
             public int number;
         }
         public bool allowBurn = true;                      // 是否允许烧焦
         public bool allowLostCustomer = true;              // 是否允许流失顾客
-        public int smileCount;                             // 需要收集的笑脸个数
+        public int smileCount = 0;                             // 需要收集的笑脸个数
         public List<NameAndNumber> requiredCustomers = new List<NameAndNumber>();      // 需要服务的顾客个数
         public List<NameAndNumber> requiredFoods = new List<NameAndNumber>();          // 需要服务食物个数
     }
@@ -89,6 +104,7 @@ namespace Ministone.GameCore.GameData
         public RangeData<float> orderInterval = new RangeData<float>(0, 0);
         public RangeData<int> litterInterval = new RangeData<int>(0, 0);
         public RangeData<int> brokenInterval = new RangeData<int>(0, 0);
+        public RangeData<int> rainInterval = new RangeData<int>(0, 0);
         public DecayData waitDecay = new DecayData();
         public DecayData cookingDecay = new DecayData();
         public DecayData burnDecay = new DecayData();
@@ -104,7 +120,7 @@ namespace Ministone.GameCore.GameData
         int m_levelId;                            // 关卡ID
         LevelType m_type = LevelType.UNKNOWED;    // 关卡类型
         int m_total;                              // 关卡设定的总时间/总顾客数/流失人数
-        int m_score;                              // 过关分数
+        List<string> m_scoreList = new List<string>();  // 过关分数 
         int m_maxOrder;                           // 同时存在的最大订单数
         int m_fullPatienceNum;                    // 满耐心值
         int m_minInstructSteps;                   // 提示制作过程的最小步数
@@ -112,13 +128,16 @@ namespace Ministone.GameCore.GameData
         RangeData<float> m_orderInterval = new RangeData<float>(0, 0);    // 订单的间隔范围
         RangeData<int> m_litterInterval = new RangeData<int>(0, 0);       // 顾客扔垃圾的间隔
         RangeData<int> m_brokenInterval = new RangeData<int>(0, 0);       // 厨具损坏的间隔
+        RangeData<int> m_rainInterval = new RangeData<int>(0, 0);         // 下雨的间隔
         DecayData m_waitingDecay = new DecayData();                       // 等待时间衰减
         DecayData m_cookingDecay = new DecayData();                       // 制作时间衰减
         DecayData m_burnDecay = new DecayData();                          // 烧焦时间衰减
         DecayData m_orderDecay = new DecayData();                         // 订单出现时间衰减
 
-        List<CustomerOrder> m_orders = new List<CustomerOrder>();                 // 订单列表
-        List<CustomerOrder> m_guideOrders = new List<CustomerOrder>();            // 需要进行指引的订单
+        List<CustomerOrder> m_orders = new List<CustomerOrder>();         // 订单列表
+        List<CustomerOrder> m_specialOrders = new List<CustomerOrder>();  // 间隔出现订单列表
+        List<CustomerOrder> m_anyfoodOrders = new List<CustomerOrder>();  // 随机食物订单列表
+        List<CustomerOrder> m_guideOrders = new List<CustomerOrder>();    // 需要进行指引的订单
 
         List<SecretCustomer> m_secretCustomers = new List<SecretCustomer>();       // 神秘顾客列表
         List<int> m_unlockItems = new List<int>();                        // 解锁的物品列表
@@ -126,6 +145,7 @@ namespace Ministone.GameCore.GameData
         FailTipData m_failTips = new FailTipData();                       // 失败的提示内容列表，多语言
 
         Requirements m_requirements = new Requirements();                 // 过关条件
+        List<string> m_organicMaterials = new List<string>();             // 有机食材
         string m_comments = "";                                           // 关卡设计备注
 
         public LevelData()
@@ -162,10 +182,10 @@ namespace Ministone.GameCore.GameData
             set { m_total = value; }
         }
 
-        public int score
+        public List<string> scoreList
         {
-            get { return m_score; }
-            set { m_score = value; }
+            get { return m_scoreList; }
+            set { m_scoreList = value; }
         }
 
         public int max_order
@@ -210,6 +230,12 @@ namespace Ministone.GameCore.GameData
             set { m_brokenInterval = value; }
         }
 
+        public RangeData<int> rain_interval
+        {
+            get { return m_rainInterval; }
+            set { m_rainInterval = value; }
+        }
+
         public DecayData waiting_decay
         {
             get { return m_waitingDecay; }
@@ -238,6 +264,18 @@ namespace Ministone.GameCore.GameData
         {
             get { return m_orders; }
             set { m_orders = value; }
+        }
+
+        public List<CustomerOrder> specialOrders
+        {
+            get { return m_specialOrders; }
+            set { m_specialOrders = value; }
+        }
+
+        public List<CustomerOrder> anyfoodOrders
+        {
+            get { return m_anyfoodOrders; }
+            set { m_anyfoodOrders = value; }
         }
 
         public List<CustomerOrder> guide_orders
@@ -290,6 +328,11 @@ namespace Ministone.GameCore.GameData
         {
             get { return m_requirements; }
             set { m_requirements = value; }
+        }
+
+        public List<string> organicMaterials{
+            get { return m_organicMaterials; }
+            set { m_organicMaterials = value; }
         }
 
         public string comments

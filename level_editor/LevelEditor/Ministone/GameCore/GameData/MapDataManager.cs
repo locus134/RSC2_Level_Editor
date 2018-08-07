@@ -47,6 +47,8 @@ namespace Ministone.GameCore.GameData
                 MyDebug.WriteLine("Failed to load map data from Map");
                 return false;
             }
+            m_mapDataList.Clear();
+            m_indexMap.Clear();
             while(reader.Read())
             {
                 int column = 0;
@@ -68,7 +70,7 @@ namespace Ministone.GameCore.GameData
                     string foods = value.ToString();
                     if (!string.IsNullOrEmpty(foods))
                     {
-                        mapData.food_list = new List<string>(foods.Split(','));
+                        mapData.food_list = new List<string>(foods.Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries));
                     } 
                 }
 
@@ -78,7 +80,7 @@ namespace Ministone.GameCore.GameData
                     string customers = value.ToString();
                     if (!string.IsNullOrEmpty(customers))
                     {
-                        mapData.customer_list = new List<string>(customers.Split(','));
+                        mapData.customer_list = new List<string>(customers.Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries));
                     }
                 }
 
@@ -88,7 +90,7 @@ namespace Ministone.GameCore.GameData
                     string spCustomers = value.ToString();
                     if (!string.IsNullOrEmpty(spCustomers))
                     {
-                        mapData.special_customer_list = new List<string>(spCustomers.Split(','));
+                        mapData.special_customer_list = new List<string>(spCustomers.Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries));
                     } 
                 }
 
@@ -96,7 +98,8 @@ namespace Ministone.GameCore.GameData
                 m_indexMap.AddValue(mapData.key, mapData.id, m_mapDataList.Count - 1);
             }
 
-
+            reader.Close();
+            m_cnn.Close();
 
             //m_mapDataList = JsonConvert.DeserializeObject<List<MapData>>(jsonStr);
             //m_indexMap.Clear();
@@ -118,7 +121,7 @@ namespace Ministone.GameCore.GameData
             return JsonConvert.SerializeObject(m_mapDataList, Formatting.Indented);
         }
 
-        public MapData GetRestaurant(string key)
+        public MapData GetMapData(string key)
         {
             int index;
             if (m_indexMap.GetValue(key, out index))
@@ -128,12 +131,12 @@ namespace Ministone.GameCore.GameData
             return null;
         }
 
-        public List<MapData> GetAllRestaurants()
+        public List<MapData> GetAllMaps()
         {
             return m_mapDataList;
         }
 
-        public MapData GetRestaurant(int id)
+        public MapData GetMapData(int id)
         {
             int index;
             if (m_indexMap.GetValue(id, out index))
@@ -143,7 +146,7 @@ namespace Ministone.GameCore.GameData
             return null;
         }
 
-        public void AddRestaurant(MapData rest)
+        public void AddMapData(MapData rest)
         {
             int i;
             if (!m_indexMap.GetValue(rest.key, out i))
@@ -154,13 +157,13 @@ namespace Ministone.GameCore.GameData
             }
         }
 
-        public void SetRestaurant(MapData rest, int index)
+        public void setMapData(MapData rest, int index)
         {
             m_mapDataList.RemoveAt(index);
             m_mapDataList.Insert(index, rest);
         }
 
-        public void RemoveRestaurant(string key)
+        public void RemoveMapData(string key)
         {
             int i;
             if (m_indexMap.GetValue(key, out i))
@@ -171,7 +174,7 @@ namespace Ministone.GameCore.GameData
             }
         }
 
-        public void RemoveRestaurant(int id)
+        public void RemoveMapData(int id)
         {
             int i;
             if (m_indexMap.GetValue(id, out i))
@@ -184,7 +187,7 @@ namespace Ministone.GameCore.GameData
 
         public bool IsSpecialCustomer(int restId, string customer)
         {
-            MapData rd = GetRestaurant(restId);
+            MapData rd = GetMapData(restId);
             if (rd == null)
             {
                 return false;
@@ -194,7 +197,7 @@ namespace Ministone.GameCore.GameData
 
         public bool IsSpecialCustomer(string restKey, string customer)
         {
-            MapData rd = GetRestaurant(restKey);
+            MapData rd = GetMapData(restKey);
             if (rd == null)
             {
                 return false;

@@ -64,7 +64,7 @@ namespace LevelEditor
             Pixbuf pb = new Pixbuf(Utils.GetFoodImagePath(foodData));
             float scale = iconSize / pb.Height;
             Pixbuf foodIcon = pb.ScaleSimple((int)(scale * pb.Width), (int)iconSize, InterpType.Hyper);
-            m_foodListStore.AppendValues(foodIcon, foodData.GetDisplayName("zh-cn"), food);
+            m_foodListStore.AppendValues(foodIcon, foodData.GetDisplayName("cn"), food);
         }
 
         protected void AppendSelectedFood(string food, float weight)
@@ -74,7 +74,7 @@ namespace LevelEditor
             Pixbuf pb = new Pixbuf(Utils.GetFoodImagePath(foodData));
             float scale = iconSize / pb.Height;
             Pixbuf foodIcon = pb.ScaleSimple((int)(scale * pb.Width), (int)iconSize, InterpType.Hyper);
-            m_foodWeightListStore.AppendValues(foodIcon, foodData.GetDisplayName("zh-cn"), weight.ToString(), food);
+            m_foodWeightListStore.AppendValues(foodIcon, foodData.GetDisplayName("cn"), weight.ToString(), food);
         }
 
         protected void OnEditedWeight(object o, EditedArgs args)

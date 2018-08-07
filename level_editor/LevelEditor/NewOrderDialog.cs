@@ -30,7 +30,7 @@ namespace LevelEditor
             m_curFood = food;
             string imgPath = Utils.GetFoodImagePath(food);
             image_food.Pixbuf = new Pixbuf(imgPath).ScaleSimple(100, 100, InterpType.Bilinear);
-            label_food_name.Text = _foodMgr.GetFood(food).GetDisplayName("zh-cn");
+            label_food_name.Text = _foodMgr.GetFood(food).GetDisplayName("cn");
 
             m_customerList = new List<CustomerData>();
             for (int i = 0; i < customerList.Count; ++ i)
@@ -43,7 +43,7 @@ namespace LevelEditor
                 for (int i = 0; i < m_customerList.Count; ++i)
                 {
                     CustomerData cust = m_customerList[i];
-                    string name = cust.GetDisplayName("zh-cn");
+                    string name = cust.GetDisplayName("cn");
                     combobox_customer.AppendText(name);
                 }
 

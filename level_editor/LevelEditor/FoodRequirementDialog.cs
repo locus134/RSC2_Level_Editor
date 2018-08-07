@@ -71,7 +71,7 @@ namespace LevelEditor
             Pixbuf pb = new Pixbuf(Utils.GetFoodImagePath(fd));
             float scale = 60.0f / pb.Height;
             Pixbuf foodIcon = pb.ScaleSimple((int)(scale * pb.Width), (int)(scale * pb.Height), InterpType.Hyper);
-            m_reqFoodStore.AppendValues(foodIcon, fd.GetDisplayName("zh-cn"), req.number, req.name);
+            m_reqFoodStore.AppendValues(foodIcon, fd.GetDisplayName("cn"), req.number, req.name);
         }
 
         protected void OnButtonOkClicked(object sender, EventArgs e)

@@ -36,7 +36,7 @@ namespace LevelEditor
             {
                 foreach (RewardData rd in rewards)
                 {
-                    SetRewardItem(rd.itemID, rd.itemCount, null);
+                    SetRewardItem(rd.itemKey, rd.itemCount, null);
                 }
             }
             treeview_reward_list.Model = m_rewardStore;
@@ -48,26 +48,26 @@ namespace LevelEditor
             get => m_rewards;
         }
 
-        protected void SetRewardItem(int id, int count, TreePath path)
+        protected void SetRewardItem(string key, int count, TreePath path)
         {
-            TreeIter iter;
-            if (path != null)
-            {
-                if (!m_rewardStore.GetIter(out iter, path))
-                {
-                    return;
-                }
-                m_rewardStore.SetValue(iter, 0, id);
-                if (count >= 0)
-                {
-                    m_rewardStore.SetValue(iter, 1, count);
-                }
-            }
-            else
-            {
-                Pixbuf pb = Pixbuf.LoadFromResource("LevelEditor.question.png");
-                iter = m_rewardStore.AppendValues(id, count, pb, "");
-            }
+            //TreeIter iter;
+            //if (path != null)
+            //{
+            //    if (!m_rewardStore.GetIter(out iter, path))
+            //    {
+            //        return;
+            //    }
+            //    m_rewardStore.SetValue(iter, 0, id);
+            //    if (count >= 0)
+            //    {
+            //        m_rewardStore.SetValue(iter, 1, count);
+            //    }
+            //}
+            //else
+            //{
+            //    Pixbuf pb = Pixbuf.LoadFromResource("LevelEditor.question.png");
+            //    iter = m_rewardStore.AppendValues(id, count, pb, "");
+            //}
 
             //TODO: 修改物品的图片和名称
         }
@@ -80,7 +80,7 @@ namespace LevelEditor
                 TreeIter iter;
                 if (m_rewardStore.GetIterFromString(out iter, args.Path))
                 {
-                    SetRewardItem(id, -1, m_rewardStore.GetPath(iter));
+                    //SetRewardItem(id, -1, m_rewardStore.GetPath(iter));
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace LevelEditor
 
         protected void OnButtonAddRewardClicked(object sender, EventArgs e)
         {
-            SetRewardItem(0, 0, null);
+            //SetRewardItem(0, 0, null);
         }
 
         protected void OnButtonRemoveRewardClicked(object sender, EventArgs e)
@@ -128,15 +128,15 @@ namespace LevelEditor
                 do
                 {
                     RewardData rd = new RewardData();
-                    rd.itemID = (int)m_rewardStore.GetValue(iter, 0);
-                    if (rd.itemID > 0)
-                    {
-                        rd.itemCount = (int)m_rewardStore.GetValue(iter, 1);
-                        if (rd.itemCount > 0)
-                        {
-                            m_rewards.Add(rd);
-                        }
-                    }
+                    //rd.itemID = (int)m_rewardStore.GetValue(iter, 0);
+                    //if (rd.itemID > 0)
+                    //{
+                    //    rd.itemCount = (int)m_rewardStore.GetValue(iter, 1);
+                    //    if (rd.itemCount > 0)
+                    //    {
+                    //        m_rewards.Add(rd);
+                    //    }
+                    //}
                 } while (m_rewardStore.IterNext(ref iter));
             }
         }

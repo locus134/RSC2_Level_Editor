@@ -72,7 +72,7 @@ namespace LevelEditor
             Pixbuf pb = new Pixbuf(Utils.GetCustomerImagePath(cust));
             float scale = 80.0f / pb.Height;
             Pixbuf custIcon = pb.ScaleSimple((int)(scale * pb.Width), (int)(scale * pb.Height), InterpType.Hyper);
-            m_reqCustStore.AppendValues(custIcon, cust.GetDisplayName("zh-cn"), req.number, req.name);
+            m_reqCustStore.AppendValues(custIcon, cust.GetDisplayName("cn"), req.number, req.name);
         }
 
         protected void OnButtonAddCustomerClicked(object sender, EventArgs e)

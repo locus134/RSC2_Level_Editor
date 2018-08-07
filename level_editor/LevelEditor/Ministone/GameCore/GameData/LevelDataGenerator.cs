@@ -35,11 +35,11 @@ namespace Ministone.GameCore.GameData
             lvlData.order_decay = config.orderDecay;
 
             List<CustomerOrder> orders = GenerateOrders(config.foodWeightList, config.customerList);
-            int score;
+            List<string> scoreList;
             Requirements requirements;
-            if (GenerateRequirements(orders, config, out score, out requirements))
+            if (GenerateRequirements(orders, config, out scoreList, out requirements))
             {
-                lvlData.score = score;
+                lvlData.scoreList = scoreList;
                 lvlData.requirements = requirements;
             }
             lvlData.orders = orders;
@@ -95,10 +95,10 @@ namespace Ministone.GameCore.GameData
             return orders;
         }
 
-        public bool GenerateRequirements(List<CustomerOrder> orders, AutoGenConfig config, out int score, out Requirements requirements)
+        public bool GenerateRequirements(List<CustomerOrder> orders, AutoGenConfig config, out List<string> scoreList, out Requirements requirements)
         {
             int estimateCustomerCount;
-            score = EstimateTargetScore(orders, config, out estimateCustomerCount);
+            scoreList = EstimateTargetScore(orders, config, out estimateCustomerCount);
             requirements = CalcRequirements(orders, config, estimateCustomerCount);
             return true;
         }
@@ -151,7 +151,7 @@ namespace Ministone.GameCore.GameData
             return income;
         }
 
-        protected int EstimateTargetScore(List<CustomerOrder> orders, AutoGenConfig config, out int estimateCustomerCount)
+        protected List<string> EstimateTargetScore(List<CustomerOrder> orders, AutoGenConfig config, out int estimateCustomerCount)
         {
             int score = 0;
             estimateCustomerCount = 0;
@@ -244,7 +244,7 @@ namespace Ministone.GameCore.GameData
             int score2 = (int)(score * scoreAmp / 10) * 10;
             int score3 = (int)(score2 * scoreAmp / 10) * 10;
 
-            return score;
+            return new List<string>(){score.ToString(), score2.ToString(), score3.ToString()};
         }
 
         protected Requirements CalcRequirements(List<CustomerOrder> orders, AutoGenConfig config, int customerCount)

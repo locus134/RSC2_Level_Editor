@@ -60,7 +60,7 @@ namespace LevelEditor
             {
                 foreach (SecretCustomer sc in secretCustomers)
                 {
-                    AppendSecretCustomer(sc.customer, sc.showOrder);
+                    AppendSecretCustomer(sc.customer, sc.showOrders);
                 }
             }
             treeview_secret_customers.Model = m_secretStore;
@@ -73,17 +73,17 @@ namespace LevelEditor
             Pixbuf pb = new Pixbuf(Utils.GetCustomerImagePath(customer));
             float scale = iconSize / pb.Height;
             Pixbuf custIcon = pb.ScaleSimple((int)(scale * pb.Width), (int)iconSize, InterpType.Hyper);
-            m_customerStore.AppendValues(custIcon, custData.GetDisplayName("zh-cn"), customer);
+            m_customerStore.AppendValues(custIcon, custData.GetDisplayName("cn"), customer);
         }
 
-        protected void AppendSecretCustomer(string customer, int showOrder)
+        protected void AppendSecretCustomer(string customer, List<int> showOrder)
         {
             float iconSize = 60.0f;
             CustomerData custData = _custMgr.GetCustomer(customer);
             Pixbuf pb = new Pixbuf(Utils.GetCustomerImagePath(customer));
             float scale = iconSize / pb.Height;
             Pixbuf custIcon = pb.ScaleSimple((int)(scale * pb.Width), (int)iconSize, InterpType.Hyper);
-            m_secretStore.AppendValues(custIcon, custData.GetDisplayName("zh-cn"), showOrder, customer);
+            m_secretStore.AppendValues(custIcon, custData.GetDisplayName("cn"), showOrder, customer);
         }
 
         public List<SecretCustomer> SecretCustomers
@@ -117,7 +117,7 @@ namespace LevelEditor
                     if (m_customerStore.GetIter(out iter, paths[i]))
                     {
                         string customer = (string)m_customerStore.GetValue(iter, 2);
-                        AppendSecretCustomer(customer, 0);
+                        AppendSecretCustomer(customer, new List<int>());
                     }
                 }
                 for (int i = paths.Length - 1; i >= 0; -- i)
@@ -167,7 +167,7 @@ namespace LevelEditor
                 {
                     SecretCustomer sc = new SecretCustomer();
                     sc.customer = (string)m_secretStore.GetValue(iter, 3);
-                    sc.showOrder = (int)m_secretStore.GetValue(iter, 2);
+                    sc.showOrders = (List<int>)m_secretStore.GetValue(iter, 2);
                     m_secretCustomers.Add(sc);
                 } while (m_secretStore.IterNext(ref iter));
             }

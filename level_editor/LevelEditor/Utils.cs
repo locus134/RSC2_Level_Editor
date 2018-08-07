@@ -23,7 +23,7 @@ namespace LevelEditor
             {
                 SUPPORTED_LANGUAGES = new Dictionary<string, string>();
                 SUPPORTED_LANGUAGES.Add("英文", "en");
-                SUPPORTED_LANGUAGES.Add("简体中文", "zh-cn");
+                SUPPORTED_LANGUAGES.Add("简体中文", "cn");
                 SUPPORTED_LANGUAGES.Add("繁体中文", "zh-tw");
                 SUPPORTED_LANGUAGES.Add("德文", "de");
                 SUPPORTED_LANGUAGES.Add("西班牙文", "es");
@@ -95,7 +95,7 @@ namespace LevelEditor
         {
             if (foodTexPath == null)
             {
-                foodTexPath = AppConfig.food_texture_path;
+                foodTexPath = AppConfig.sd_path;
             }
             FoodDataManager _foodMgr = FoodDataManager.GetInstance();
             ListStore foodListStore = new ListStore(typeof(Pixbuf), typeof(string), typeof(string));
@@ -104,12 +104,12 @@ namespace LevelEditor
                 FoodData fd = _foodMgr.GetFood(foodList[i]);
                 if (fd != null)
                 {
-                    Pixbuf pixBuf = new Pixbuf(foodTexPath + fd.texture + ".png");
+                    Pixbuf pixBuf = new Pixbuf(foodTexPath + fd.texture);
                     float scale = 60.0f / pixBuf.Height;
 
                     Pixbuf scaledBuf = pixBuf.ScaleSimple((int)(pixBuf.Width * scale),
                                                               (int)(pixBuf.Height * scale), InterpType.Bilinear);
-                    foodListStore.AppendValues(scaledBuf, fd.GetDisplayName("zh-cn"), fd.key);
+                    foodListStore.AppendValues(scaledBuf, fd.GetDisplayName("cn"), fd.key);
                 }
             }
             treeview.Model = foodListStore;
@@ -119,7 +119,7 @@ namespace LevelEditor
         {
             if (customerTexPath == null)
             {
-                customerTexPath = AppConfig.customer_texture_path;
+                customerTexPath = AppConfig.sd_path;
             }
             string seperator = System.IO.Path.DirectorySeparatorChar.ToString();
             CustomerDataManager _custMgr = CustomerDataManager.GetInstance();
@@ -129,11 +129,11 @@ namespace LevelEditor
                 CustomerData cust = _custMgr.GetCustomer(customerList[i]);
                 if (cust != null)
                 {
-                    Pixbuf pixBuf = new Pixbuf(customerTexPath + cust.key + seperator + cust.icon_texture + ".png");
+                    Pixbuf pixBuf = new Pixbuf(customerTexPath + cust.icon_texture);
                     float scale = 80.0f / pixBuf.Height;
 
                     Pixbuf scaledBuf = pixBuf.ScaleSimple((int)(pixBuf.Width * scale), (int)(pixBuf.Height * scale), InterpType.Bilinear);
-                    custListStore.AppendValues(scaledBuf, cust.GetDisplayName("zh-cn"), cust.key);
+                    custListStore.AppendValues(scaledBuf, cust.GetDisplayName("cn"), cust.key);
                 }
             }
             treeView.Model = custListStore;
@@ -142,23 +142,23 @@ namespace LevelEditor
         public static string GetFoodImagePath(string food)
         {
             FoodData fd = FoodDataManager.GetInstance().GetFood(food);
-            return AppConfig.food_texture_path + fd.texture + ".png";
+            return AppConfig.sd_path + fd.texture;
         }
 
         public static string GetFoodImagePath(FoodData fd)
         {
-            return AppConfig.food_texture_path + fd.texture + ".png";
+            return AppConfig.sd_path + fd.texture;
         }
 
         public static string GetCustomerImagePath(string customer)
         {
             CustomerData cust = CustomerDataManager.GetInstance().GetCustomer(customer);
-            return AppConfig.customer_texture_path + cust.key + DIR_SEPRATOR + cust.icon_texture + ".png";
+            return AppConfig.sd_path + cust.icon_texture;
         }
 
         public static string GetCustomerImagePath(CustomerData cust)
         {
-            return AppConfig.customer_texture_path + cust.key + DIR_SEPRATOR + cust.icon_texture + ".png";
+            return AppConfig.sd_path + cust.icon_texture;
         }
 
         public static void SelectTreeRow(TreeView treeView, int row)

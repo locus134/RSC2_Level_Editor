@@ -123,6 +123,8 @@
     <Compile Include="FoodWeightSelectDialog.cs" />
     <Compile Include="gtk-gui\LevelEditor.FoodWeightSelectDialog.cs" />
     <Compile Include="Ministone\GameCore\GameData\SqlUtility.cs" />
+    <Compile Include="Ministone\ScanFormatted.cs" />
+    <Compile Include="Ministone\TextParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ministone\" />

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 
 namespace Ministone.GameCore.GameData.Generic
 {
@@ -7,12 +9,32 @@ namespace Ministone.GameCore.GameData.Generic
     {
         public static int ToInt32(this string str)
         {
-            return int.Parse(str);
+            int ret = 0;
+            try
+            {
+                ret = int.Parse(str);
+            }
+            catch (Exception)
+            {
+                string errorCode = string.Format("Convert to Int32 Error with '{0}'", str);
+                Debug.Assert(false, errorCode);
+            }
+            return ret;
         }
 
         public static float ToFloat(this string str)
         {
-            return float.Parse(str);
+            float ret = 0;
+            try
+            {
+                ret = float.Parse(str);
+            }
+            catch (Exception)
+            {
+                string errorCode = string.Format("Convert to Float Error with '{0}'", str);
+                Debug.Assert(false, errorCode); ;
+            }
+            return ret;
         }
     }
 
@@ -22,6 +44,12 @@ namespace Ministone.GameCore.GameData.Generic
         public T max;
 
         public RangeData(T _min, T _max)
+        {
+            min = _min;
+            max = _max;
+        }
+
+        public void set(T _min, T _max)
         {
             min = _min;
             max = _max;
@@ -196,5 +224,23 @@ namespace Ministone.GameCore.GameData.Generic
 
         [Conditional("DEBUG")]
         public static void Unindent() { Debug.Unindent(); }
+    }
+
+    public static class ConvertList
+    {
+        public static string List2String<T>(List<T> ls, char split)
+        {
+            StringBuilder ret = new StringBuilder();
+            if (ls.Count > 0)
+            {
+                foreach (T item in ls)
+                {
+                    ret.Append(Convert.ToString(item));
+                    ret.Append(split);
+                }
+                if (ret.Length > 0) ret.Remove(ret.Length - 1, 1);
+            }
+            return ret.ToString();
+        }
     }
 }
