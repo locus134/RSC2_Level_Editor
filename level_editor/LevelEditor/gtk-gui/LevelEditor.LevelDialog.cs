@@ -1714,7 +1714,7 @@ namespace LevelEditor
 			this.GtkScrolledWindow2.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow2.Gtk.Container+ContainerChild
 			this.tree_order_list = new global::Gtk.TreeView();
-			this.tree_order_list.WidthRequest = 350;
+			this.tree_order_list.WidthRequest = 410;
 			this.tree_order_list.CanFocus = true;
 			this.tree_order_list.Name = "tree_order_list";
 			this.GtkScrolledWindow2.Add(this.tree_order_list);
@@ -2097,7 +2097,7 @@ namespace LevelEditor
 			{
 				this.Child.ShowAll();
 			}
-			this.DefaultWidth = 1289;
+			this.DefaultWidth = 1345;
 			this.DefaultHeight = 938;
 			this.Show();
 			this.combobox_level_id.Changed += new global::System.EventHandler(this.OnComboboxLevelIdChanged);

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Gdk;
 using Gtk;
 using Ministone.GameCore.GameData;
+using Newtonsoft.Json;
 
 namespace LevelEditor
 {
@@ -10,11 +12,26 @@ namespace LevelEditor
     {
         static public AppConfig AppConfig = new AppConfig();
         static private string DIR_SEPRATOR = System.IO.Path.DirectorySeparatorChar.ToString();
-
+        static private string CONFIG_PATH = Directory.GetCurrentDirectory() + DIR_SEPRATOR + "config.json";
         static private Dictionary<string, string> SUPPORTED_LANGUAGES;
 
         private Utils()
         {
+        }
+
+        public static void DeserializeAppConfig()
+        {
+            if (File.Exists(CONFIG_PATH))
+            {
+                string jsonStr = File.ReadAllText(CONFIG_PATH);
+                Utils.AppConfig = JsonConvert.DeserializeObject<AppConfig>(jsonStr);
+            }
+        }
+
+        public static void SerializeAppConfig()
+        {
+            string jsonStr = JsonConvert.SerializeObject(Utils.AppConfig);
+            File.WriteAllText(CONFIG_PATH, jsonStr);
         }
 
         private static void InitLangs()
@@ -168,6 +185,12 @@ namespace LevelEditor
             {
                 treeView.Selection.SelectIter(iter);
             }
+        }
+
+        public static Pixbuf GetGeneralIcon()
+        {
+            Pixbuf pb = Pixbuf.LoadFromResource("LevelEditor.question.png");
+            return pb;
         }
     }
 }

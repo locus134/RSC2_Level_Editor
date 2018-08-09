@@ -17,17 +17,18 @@ public partial class MainWindow : Gtk.Window
     OrderDataManager _ordMgr = OrderDataManager.GetInstance();
     LevelDataManager _lvlMgr = LevelDataManager.GetInstance();
 
-    const string RESTAURANT_FILE = "GameConfig.s3db";
+    const string LEVEL_FILE = "GameConfig.s3db";
     const string COOKWARE_FILE = "CookingWareInfo.s3db";
     const string INGREDIENT_FILE = "MaterialInfo.s3db";
     const string FOOD_FILE = "FoodInfo.s3db";
     const string CUSTOMER_FILE = "customer.s3db";
+    const string MAP_FILE = "mapData.s3db";
 
     //const string ORDER_FILE = "order.json";
     const string LEVEL_DIR = "levels";
     string DIR_SEPRATOR;
 
-    string m_restFilePath;
+    string m_mapFilePath;
     string m_cookwareFilePath;
     string m_ingFilePath;
     string m_foodFilePath;
@@ -35,7 +36,6 @@ public partial class MainWindow : Gtk.Window
     string m_orderFilePath;
     string m_levelFilePath;
 
-    string m_configFilePath;
     MapData m_curRestData;
 
     public MainWindow() : base(Gtk.WindowType.Toplevel)
@@ -54,8 +54,7 @@ public partial class MainWindow : Gtk.Window
         special_customer_list.AppendColumn("图片", new CellRendererPixbuf(), "pixbuf", 0);
         special_customer_list.AppendColumn("名称", new CellRendererText(), "text", 1);
 
-        m_configFilePath = string.Format("{0}{1}config.json", Directory.GetCurrentDirectory(), DIR_SEPRATOR);
-        Deserialize();
+        Utils.DeserializeAppConfig();
         if (!string.IsNullOrEmpty(Utils.AppConfig.db_path))
         {
             text_dbpath.Text = Utils.AppConfig.db_path;
@@ -63,24 +62,11 @@ public partial class MainWindow : Gtk.Window
         }
     }
 
-    protected void Deserialize()
-    {
-        if (File.Exists(m_configFilePath))
-        {
-            string jsonStr = File.ReadAllText(m_configFilePath);
-            Utils.AppConfig = JsonConvert.DeserializeObject<AppConfig>(jsonStr);
-        }
-    }
 
-    protected void Serialize()
-    {
-        string jsonStr = JsonConvert.SerializeObject(Utils.AppConfig);
-        File.WriteAllText(m_configFilePath, jsonStr);
-    }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
     {
-        Serialize();
+        Utils.SerializeAppConfig();
         Application.Quit();
         a.RetVal = true;
     }
@@ -116,7 +102,7 @@ public partial class MainWindow : Gtk.Window
         }
         dlg.Destroy();
 
-        Serialize();
+        Utils.SerializeAppConfig();
     }
 
     void ResetDisplay()
@@ -147,13 +133,13 @@ public partial class MainWindow : Gtk.Window
     {
         ResetDisplay();
 
-        m_restFilePath = Utils.AppConfig.db_path + RESTAURANT_FILE;
+        m_mapFilePath = Utils.AppConfig.db_path + MAP_FILE;
         m_cookwareFilePath = Utils.AppConfig.db_path + COOKWARE_FILE;
         m_ingFilePath = Utils.AppConfig.db_path + INGREDIENT_FILE;
         m_foodFilePath = Utils.AppConfig.db_path + FOOD_FILE;
         m_custFilePath = Utils.AppConfig.db_path + CUSTOMER_FILE;
         m_orderFilePath = m_custFilePath;
-        m_levelFilePath = m_restFilePath;
+        m_levelFilePath = Utils.AppConfig.db_path + LEVEL_FILE;
 
         try
         {
@@ -208,9 +194,9 @@ public partial class MainWindow : Gtk.Window
 
             }
 
-            if (File.Exists(m_restFilePath))
+            if (File.Exists(m_mapFilePath))
             {
-                if (_restMgr.LoadFromDBFile(m_restFilePath))
+                if (_restMgr.LoadFromDBFile(m_mapFilePath))
                 {
                     ReloadLevelData();
                 }
@@ -252,10 +238,10 @@ public partial class MainWindow : Gtk.Window
             int curIndex = 0;
             if (m_curRestData != null)
             {
-                Utils.AppConfig.select_restaurant = m_curRestData.GetDisplayName("cn");
+                Utils.AppConfig.select_map = m_curRestData.GetDisplayName("cn");
             }
 
-            if (Utils.AppConfig.select_restaurant != null)
+            if (Utils.AppConfig.select_map != null)
             {
                 TreeIter iter;
                 int i = 0;
@@ -264,7 +250,7 @@ public partial class MainWindow : Gtk.Window
                 {
                     GLib.Value thisRow = new GLib.Value();
                     map_index.Model.GetValue(iter, 0, ref thisRow);
-                    if ((thisRow.Val as string).Equals(Utils.AppConfig.select_restaurant))
+                    if ((thisRow.Val as string).Equals(Utils.AppConfig.select_map))
                     {
                         curIndex = i;
                         break;
@@ -301,8 +287,8 @@ public partial class MainWindow : Gtk.Window
     protected void OnMapIndexChanged(object sender, EventArgs e)
     {
         m_curRestData = _restMgr.GetAllMaps()[map_index.Active];
-        Utils.AppConfig.select_restaurant = m_curRestData.GetDisplayName("cn");
-        Serialize();
+        Utils.AppConfig.select_map = m_curRestData.GetDisplayName("cn");
+        Utils.SerializeAppConfig();
         RefreshCurrent();
     }
 
@@ -342,7 +328,7 @@ public partial class MainWindow : Gtk.Window
         _restMgr.setMapData(m_curRestData, map_index.Active);
 
         string jsonStr = _restMgr.GetJsonString();
-        File.WriteAllText(m_restFilePath, jsonStr);
+        File.WriteAllText(m_mapFilePath, jsonStr);
 
         ReloadMapData();
     }

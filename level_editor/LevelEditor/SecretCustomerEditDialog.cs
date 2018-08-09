@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gtk;
 using Gdk;
 using Ministone.GameCore.GameData;
+using Ministone.GameCore.GameData.Generic;
 
 namespace LevelEditor
 {
@@ -60,7 +61,7 @@ namespace LevelEditor
             {
                 foreach (SecretCustomer sc in secretCustomers)
                 {
-                    AppendSecretCustomer(sc.customer, sc.showOrders);
+                    AppendSecretCustomer(sc.customer, sc.showOrder);
                 }
             }
             treeview_secret_customers.Model = m_secretStore;
@@ -76,7 +77,7 @@ namespace LevelEditor
             m_customerStore.AppendValues(custIcon, custData.GetDisplayName("cn"), customer);
         }
 
-        protected void AppendSecretCustomer(string customer, List<int> showOrder)
+        protected void AppendSecretCustomer(string customer, int showOrder)
         {
             float iconSize = 60.0f;
             CustomerData custData = _custMgr.GetCustomer(customer);
@@ -102,7 +103,7 @@ namespace LevelEditor
             TreeIter iter;
             if (m_secretStore.GetIterFromString(out iter, args.Path))
             {
-                m_secretStore.SetValue(iter, 2, num);
+                m_secretStore.SetValue(iter, 2, num.ToString());
             }
         }
 
@@ -117,7 +118,7 @@ namespace LevelEditor
                     if (m_customerStore.GetIter(out iter, paths[i]))
                     {
                         string customer = (string)m_customerStore.GetValue(iter, 2);
-                        AppendSecretCustomer(customer, new List<int>());
+                        AppendSecretCustomer(customer, 0);
                     }
                 }
                 for (int i = paths.Length - 1; i >= 0; -- i)
@@ -165,10 +166,14 @@ namespace LevelEditor
             {
                 do
                 {
-                    SecretCustomer sc = new SecretCustomer();
-                    sc.customer = (string)m_secretStore.GetValue(iter, 3);
-                    sc.showOrders = (List<int>)m_secretStore.GetValue(iter, 2);
-                    m_secretCustomers.Add(sc);
+                    try{
+                        SecretCustomer sc = new SecretCustomer();
+                        sc.customer = (string)m_secretStore.GetValue(iter, 3);
+                        sc.showOrder = (int)m_secretStore.GetValue(iter, 2);
+                        m_secretCustomers.Add(sc);
+                    }catch(Exception err){
+                        Console.WriteLine(err);
+                    }
                 } while (m_secretStore.IterNext(ref iter));
             }
         }

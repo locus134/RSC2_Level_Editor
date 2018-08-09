@@ -12,7 +12,7 @@ namespace Ministone.GameCore.GameData
         List<CookwareData> m_cookwareList;
         KeyIndexMap<int> m_indexMap;
 
-        SQLiteConnection m_cwCnn = null;
+        string m_dbpath;
 
         private CookwareDataManager()
         {
@@ -35,13 +35,14 @@ namespace Ministone.GameCore.GameData
             {
                 return false;
             }
+            m_dbpath = dbPath;
 
-            m_cwCnn = new SQLiteConnection();
-            m_cwCnn.ConnectionString = string.Format("Data Source={0};Version=3", dbPath);
-            m_cwCnn.Open();
+            var cwCnn = new SQLiteConnection();
+            cwCnn.ConnectionString = string.Format("Data Source={0};Version=3", dbPath);
+            cwCnn.Open();
 
             string sql_select = "SELECT CookingWareID,KeyName,lv,type,specialEffects,name_cn,Coin,Cash,BaseWorkTime,WorkSpeed,BurnSpeed,Makecount,ScopeMap,DefaultFoodID,ArmaturePath,Thumbnails FROM cookingware";
-            SQLiteCommand cmd = m_cwCnn.CreateCommand();
+            SQLiteCommand cmd = cwCnn.CreateCommand();
             cmd.CommandText = sql_select;
             var reader = cmd.ExecuteReader();
             if(reader == null)
@@ -102,23 +103,11 @@ namespace Ministone.GameCore.GameData
                 m_cookwareList.Add(cwData);
                 m_indexMap.AddValue(cwData.key, cwData.id, m_cookwareList.Count - 1);
             }
-
-
-
-            //var list = JsonConvert.DeserializeObject<List<CookwareData>>(jsonStr);
-            //if (list == null)
-            //{
-            //    Debug.WriteLine("Error loading Cookware Data from JSON!");
-            //    return false;
-            //}
-
-            //m_cookwareList = list;
-            //m_indexMap.Clear();
-            //for (int i = 0; i < m_cookwareList.Count; ++ i)
-            //{
-            //    CookwareData cd = m_cookwareList[i];
-            //    m_indexMap.AddValue(cd.key, cd.id, i);
-            //}
+            reader.Close();
+            cmd.Dispose();
+            cwCnn.Close();
+            cwCnn.Dispose();
+            
             return true;
         }
 

@@ -16,6 +16,10 @@ namespace LevelEditor
         OrderDataManager _orderMgr;
         List<OrderData> m_allOrders;
 
+        List<OrderData> m_updateOrders; // 修改的订单 (包括增加，修改）
+        List<OrderData> m_deleteOrders; // 删除的订单
+        List<OrderData> m_addOrders;    // 增加的订单
+
         List<string> m_foodList;
         List<string> m_customerList;
         string m_orderFilePath;
@@ -28,6 +32,9 @@ namespace LevelEditor
             _custMgr = CustomerDataManager.GetInstance();
             _orderMgr = OrderDataManager.GetInstance();
             m_allOrders = _orderMgr.GetAllOrders();
+            m_updateOrders = new List<OrderData>();
+            m_deleteOrders = new List<OrderData>();
+            m_addOrders = new List<OrderData>();
 
             m_foodList = foodList;
             m_customerList = customerList;
@@ -115,6 +122,22 @@ namespace LevelEditor
             Utils.SelectTreeRow(treeview_orderlist, 0);
         }
 
+        int IsContainOrder(ref List<OrderData> orders, string customer, string food)
+        {
+            int ret = -1;
+            int index = 0;
+            foreach(OrderData ord in orders)
+            {
+                if(ord.customer == customer && ord.food == food)
+                {
+                    ret = index;
+                    break;
+                }
+                index++;
+            }
+            return ret;
+        }
+
         void OnEditedWaitTime(object o, EditedArgs args)
         {
             TreeIter iter;
@@ -128,6 +151,17 @@ namespace LevelEditor
             }
             m_allOrders[index].wait_time = waitTime;
             treeview_orderlist.Model.SetValue(iter, 2, args.NewText);
+
+            var order = m_allOrders[index];
+            int ordIdx = IsContainOrder(ref m_updateOrders, order.customer, order.food);
+            if (ordIdx != -1)
+            {// 已经在数组里面
+                m_updateOrders[ordIdx] = order;
+            }
+            else
+            {
+                m_updateOrders.Add(order);
+            }
         }
 
         void OnEditedTip(object o, EditedArgs args)
@@ -143,6 +177,17 @@ namespace LevelEditor
             }
             m_allOrders[index].tip = tip;
             treeview_orderlist.Model.SetValue(iter, 3, args.NewText);
+
+            var order = m_allOrders[index];
+            int ordIdx = IsContainOrder(ref m_updateOrders, order.customer, order.food);
+            if (ordIdx != -1)
+            {// 已经在数组里面
+                m_updateOrders[ordIdx] = order;
+            }
+            else
+            {
+                m_updateOrders.Add(order);
+            }
         }
 
         void OnEditedConsiderTime(object o, EditedArgs args)
@@ -158,6 +203,17 @@ namespace LevelEditor
             }
             m_allOrders[index].consider_time = considerTime;
             treeview_orderlist.Model.SetValue(iter, 4, args.NewText);
+
+            var order = m_allOrders[index];
+            int ordIdx = IsContainOrder(ref m_updateOrders, order.customer, order.food);
+            if (ordIdx != -1)
+            {// 已经在数组里面
+                m_updateOrders[ordIdx] = order;
+            }
+            else
+            {
+                m_updateOrders.Add(order);
+            }
         }
 
         protected void OnTreeviewFoodlistCursorChanged(object sender, EventArgs e)
@@ -176,8 +232,19 @@ namespace LevelEditor
         protected void OnButtonSaveClicked(object sender, EventArgs e)
         {
             _orderMgr.SetAllOrders(m_allOrders);
-            string jsonStr = _orderMgr.GetJsonString();
-            File.WriteAllText(m_orderFilePath, jsonStr);
+            if(m_updateOrders.Count > 0)
+            {
+                _orderMgr.UpdateOrders(m_updateOrders);
+                m_updateOrders.Clear();
+            }
+
+            if (m_deleteOrders.Count > 0)
+            {
+                _orderMgr.DeleteOrders(m_deleteOrders);
+                m_deleteOrders.Clear();
+            }
+
+            m_addOrders.Clear();
         }
 
         protected void OnBtnRemoveOrderClicked(object sender, EventArgs e)
@@ -187,6 +254,20 @@ namespace LevelEditor
             if (treeview_orderlist.Selection.GetSelected(out model, out iter))
             {
                 int index = (int)model.GetValue(iter, 5);
+                OrderData order = m_allOrders[index];
+
+                int updateIdx = IsContainOrder(ref m_updateOrders, order.customer, order.food);
+                if(updateIdx != -1)
+                {
+                    m_updateOrders.RemoveAt(updateIdx);
+                }
+                int addIdx = IsContainOrder(ref m_addOrders, order.customer, order.food);
+                if(addIdx == -1)
+                {// 不是新增的
+                    m_deleteOrders.Add(order);
+                }else{
+                    m_addOrders.RemoveAt(addIdx);
+                }
                 m_allOrders.RemoveAt(index);
                 ShowFoodOrders(m_curFood);
             }
@@ -219,6 +300,8 @@ namespace LevelEditor
             if (newOrd != null)
             {
                 m_allOrders.Add(newOrd);
+                m_updateOrders.Add(newOrd);
+                m_addOrders.Add(newOrd);
                 ShowFoodOrders(m_curFood);
             }
             dlg.Destroy();

@@ -242,5 +242,51 @@ namespace Ministone.GameCore.GameData.Generic
             }
             return ret.ToString();
         }
+
+        public static bool List_String2Int(List<string> source, out List<int> dest)
+        {
+            bool ret = true;
+            dest = new List<int>();
+            foreach(string s in source)
+            {
+                try{
+                    int value = s.ToInt32();
+                    dest.Add(value);
+                }catch(Exception){
+                    ret = false;
+                }
+            }
+            return ret;
+        }
+
+        public static bool List_String2Int(string[] source, out List<int> dest)
+        {
+            bool ret = true;
+            dest = new List<int>();
+            foreach (string s in source)
+            {
+                try
+                {
+                    int value = s.ToInt32();
+                    dest.Add(value);
+                }
+                catch (Exception)
+                {
+                    ret = false;
+                }
+            }
+            return ret;
+        }
+
+        public static bool List_Int2String(List<int> source, out List<string> dest)
+        {
+            bool ret = true;
+            dest = new List<string>();
+            foreach (int s in source)
+            {
+                dest.Add(s.ToString());
+            }
+            return ret;
+        }
     }
 }

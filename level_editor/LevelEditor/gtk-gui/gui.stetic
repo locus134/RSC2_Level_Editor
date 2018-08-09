@@ -553,7 +553,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Dialog" id="LevelEditor.LevelDialog" design-size="1289 938">
+  <widget class="Gtk.Dialog" id="LevelEditor.LevelDialog" design-size="1345 938">
     <property name="MemberName" />
     <property name="Title" translatable="yes">关卡编辑器</property>
     <property name="WindowPosition">CenterOnParent</property>
@@ -2325,7 +2325,7 @@
                                     <child>
                                       <widget class="Gtk.TreeView" id="tree_order_list">
                                         <property name="MemberName" />
-                                        <property name="WidthRequest">350</property>
+                                        <property name="WidthRequest">410</property>
                                         <property name="CanFocus">True</property>
                                         <property name="ShowScrollbars">True</property>
                                       </widget>

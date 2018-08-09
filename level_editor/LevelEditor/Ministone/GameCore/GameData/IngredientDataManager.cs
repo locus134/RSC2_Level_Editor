@@ -11,13 +11,12 @@ namespace Ministone.GameCore.GameData
         static IngredientDataManager _instance = null;
         List<IngredientData> m_ingredientList;
         KeyIndexMap<int> m_indexMap;
-        SQLiteConnection m_cnn;
+        string m_dbPath;
 
         private IngredientDataManager()
         {
             m_ingredientList = new List<IngredientData>();
             m_indexMap = new KeyIndexMap<int>();
-            m_cnn = null;
         }
 
         public static IngredientDataManager GetInstance()
@@ -35,12 +34,13 @@ namespace Ministone.GameCore.GameData
             {
                 return false;
             }
+            m_dbPath = dbPath;
 
-            m_cnn = new SQLiteConnection();
-            m_cnn.ConnectionString = string.Format("Data Source={0};Version = 3", dbPath);
-            m_cnn.Open();
+            var sqlCnn = new SQLiteConnection();
+            sqlCnn.ConnectionString = string.Format("Data Source={0};Version = 3", dbPath);
+            sqlCnn.Open();
 
-            var cmd = m_cnn.CreateCommand();
+            var cmd = sqlCnn.CreateCommand();
             cmd.CommandText = "Select * FROM material";
 
             var reader = cmd.ExecuteReader();
@@ -78,20 +78,10 @@ namespace Ministone.GameCore.GameData
                 m_indexMap.AddValue(matData.key, matData.id, m_ingredientList.Count - 1);
             }
 
-            //var list = JsonConvert.DeserializeObject<List<IngredientData>>(jsonStr);
-            //if (list == null)
-            //{
-            //    Debug.WriteLine("Error loading ingredients from JSON!");
-            //    return false;
-            //}
-
-            //m_ingredientList = list;
-            //m_indexMap.Clear();
-            //for (int i = 0; i < m_ingredientList.Count; ++ i)
-            //{
-            //    IngredientData ing = m_ingredientList[i];
-            //    m_indexMap.AddValue(ing.key, ing.id, i);
-            //}
+            reader.Close();
+            cmd.Dispose();
+            sqlCnn.Close();
+            sqlCnn.Dispose();
 
             return true;
         }

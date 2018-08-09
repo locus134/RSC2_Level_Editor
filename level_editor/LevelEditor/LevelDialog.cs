@@ -27,6 +27,20 @@ namespace LevelEditor
         ListStore m_orderListStore;
         Pixbuf ADD_ICON;
 
+        enum OrderSeq
+        {
+            customerIcon = 0,
+            foodIcon = 1,
+            weiget,
+            minInterval,
+            maxInterval,
+            randomFood,
+            lastestCome,
+            guide,
+            customerKey,
+            foods,
+        };
+
         public LevelDialog(Gtk.Window parent, string mapKey)
         {
             //m_levelFileDir = levelFileDir;
@@ -34,6 +48,8 @@ namespace LevelEditor
             this.Build();
             this.TransientFor = parent;
             this.SetPosition(WindowPosition.CenterAlways);
+
+            m_curLevelId = Utils.AppConfig.select_level;
 
             // 读取餐厅数据
             m_curRestData = _restMgr.GetMapData(mapKey);
@@ -71,36 +87,40 @@ namespace LevelEditor
             tree_level_customer.AppendColumn("名称", new CellRendererText(), "text", 1);
             tree_level_customer.Selection.Mode = SelectionMode.Multiple;
 
-            tree_order_list.AppendColumn("顾客", new CellRendererPixbuf(), "pixbuf", 0);
-            tree_order_list.AppendColumn("食物", new CellRendererPixbuf(), "pixbuf", 1);
+            tree_order_list.AppendColumn("顾客", new CellRendererPixbuf(), "pixbuf", (int)OrderSeq.customerIcon);
+            tree_order_list.AppendColumn("食物", new CellRendererPixbuf(), "pixbuf", (int)OrderSeq.foodIcon);
 
             CellRendererText cell = new CellRendererText();
             cell.Editable = true;
             cell.Edited += OnEditedOrderWeight;
-            tree_order_list.AppendColumn("比重", cell, "text", 2);
+            tree_order_list.AppendColumn("比重", cell, "text", (int)OrderSeq.weiget);
 
             cell = new CellRendererText();
             cell.Editable = true;
             cell.Edited += OnEditedOrderIntervalStart;
-            tree_order_list.AppendColumn("间隔始", cell, "text", 3);
+            tree_order_list.AppendColumn("间隔始", cell, "text", (int)OrderSeq.minInterval);
 
             cell = new CellRendererText();
             cell.Editable = true;
             cell.Edited += OnEditedOrderIntervalEnd;
-            tree_order_list.AppendColumn("间隔末", cell, "text", 4);
+            tree_order_list.AppendColumn("间隔末", cell, "text", (int)OrderSeq.maxInterval);
+
+            cell = new CellRendererText();
+            cell.Editable = true;
+            cell.Edited += OnEditedOrderRandomFood;
+            tree_order_list.AppendColumn("随机食物", cell, "text", (int)OrderSeq.randomFood);
 
             cell = new CellRendererText();
             cell.Editable = true;
             cell.Edited += OnEditedLatestFirstCome;
-            tree_order_list.AppendColumn("最晚", cell, "text", 5);
+            tree_order_list.AppendColumn("最晚", cell, "text", (int)OrderSeq.lastestCome);
 
             CellRendererToggle cellToggle = new CellRendererToggle();
             cellToggle.Activatable = true;
             cellToggle.Toggled += OnToggledGuideOrder;
-            tree_order_list.AppendColumn("引导?", cellToggle, "active", 6);
-            m_orderListStore = new ListStore(typeof(Pixbuf), typeof(Pixbuf),
-                                                  typeof(string), typeof(int),
-                                             typeof(int), typeof(int), typeof(bool), typeof(string), typeof(List<string>));
+            tree_order_list.AppendColumn("引导?", cellToggle, "active", (int)OrderSeq.guide);
+            m_orderListStore = new ListStore(typeof(Pixbuf), typeof(Pixbuf),typeof(string), typeof(int),typeof(int), typeof(string), 
+                                             typeof(int), typeof(bool), typeof(string), typeof(List<string>));
             tree_order_list.Model = m_orderListStore;
 
             label_level_range.Text = string.Format("关卡ID范围：1-{0}", m_maxLevelId);
@@ -109,7 +129,7 @@ namespace LevelEditor
                 string level = string.Format("{0}({1})", i, i + m_curRestData.start_level -1);
                 combobox_level_id.AppendText(level);
             }
-            combobox_level_id.Active = 0;
+            combobox_level_id.Active = m_curLevelId - 1;
 
             Utils.ShowFoodList(m_curRestData.food_list, tree_level_foods);
 
@@ -217,10 +237,9 @@ namespace LevelEditor
                 foreach(SecretCustomer secret in m_curLevelData.secret_customers)
                 {
                     showStr += secret.customer;
-                    if(secret.showOrders.Count > 0)
+                    if(secret.showOrder > 0)
                     {
-                        string showOrders = ConvertList.List2String(secret.showOrders, ',');
-                        showStr += "<" + showOrders + ">";
+                        showStr += "<" + secret.showOrder.ToString() + ">";
                     }
 
                     showStr += ";";
@@ -302,6 +321,8 @@ namespace LevelEditor
             m_orderListStore.Clear();
             AppendOrderList(m_curLevelData.guide_orders, true);
             AppendOrderList(m_curLevelData.orders, false);
+            AppendOrderList(m_curLevelData.specialOrders, false);
+            AppendOrderList(m_curLevelData.anyfoodOrders, false);
         }
 
         protected bool ReadData()
@@ -330,7 +351,7 @@ namespace LevelEditor
             string scoreText = text_config_score.Text;
             bool hasSptChar = scoreText.Contains(";");
             string[] scoreList = scoreText.Split(';');
-            if(hasSptChar && scoreList.Length == 3)
+            if(!hasSptChar || scoreList.Length != 3)
             {
                 errMsg = "请输入正确的分数值";
                 goto err_return;
@@ -345,12 +366,12 @@ namespace LevelEditor
             }
             levelData.max_order = intNum;
 
-            if (!int.TryParse(text_config_full_patience.Text, out intNum) || intNum <= 0)
-            {
-                errMsg = "请输入正确的满耐心值";
-                goto err_return;
-            }
-            levelData.full_patience_num = intNum;
+            //if (!int.TryParse(text_config_full_patience.Text, out intNum) || intNum <= 0)
+            //{
+            //    errMsg = "请输入正确的满耐心值";
+            //    goto err_return;
+            //}
+            //levelData.full_patience_num = intNum;
 
             float fNum;
             if (!float.TryParse(text_config_order_interval_start.Text, out fNum) || fNum < 1e-6)
@@ -438,17 +459,13 @@ namespace LevelEditor
             }
             levelData.broken_interval = new RangeData<int>(min, max);
 
-            List<SecretCustomer> secretCustomers = JsonConvert.DeserializeObject<List<SecretCustomer>>(text_secret_customers.Text);
-            if (secretCustomers != null)
-            {
-                levelData.secret_customers = secretCustomers;
-            }
+            // 读取神秘顾客
+            string secretStr = text_secret_customers.Text;
+            levelData.parseSecretCustomer(secretStr);
 
-            Requirements requirements = JsonConvert.DeserializeObject<Requirements>(text_level_requirements.Text);
-            if (requirements != null)
-            {
-                levelData.requirements = requirements;
-            }
+            // 读取额外条件
+            string requirements = text_level_requirements.Text;
+            levelData.parseRequirement(requirements);
 
             if (!int.TryParse(text_min_instruct_steps.Text, out intNum))
             {
@@ -457,27 +474,27 @@ namespace LevelEditor
             }
             levelData.min_instruct_steps = intNum;
 
-            List<int> unlockItems = JsonConvert.DeserializeObject<List<int>>(text_unlock_item.Text);
-            if (unlockItems != null)
+            string[] unlockItems = text_unlock_item.Text.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            if (unlockItems.Length > 0)
             {
-                levelData.unlock_items = unlockItems;
+                foreach (string itemId in unlockItems)
+                {
+                    levelData.unlock_items.Add(itemId.ToInt32());
+                }
             }
 
-            List<RewardData> rewards = JsonConvert.DeserializeObject<List<RewardData>>(text_level_rewards.Buffer.Text);
-            if (rewards != null)
-            {
-                levelData.rewards = rewards;
-            }
+            string rewards = text_level_rewards.Buffer.Text;
+            levelData.parseRewards(rewards);
 
-            FailTipData failTips = JsonConvert.DeserializeObject<FailTipData>(text_level_tips.Buffer.Text);
-            if (failTips != null)
-            {
-                levelData.fail_tips = failTips;
-            }
-            if (!string.IsNullOrEmpty(text_level_comments.Buffer.Text))
-            {
-                levelData.comments = text_level_comments.Buffer.Text;
-            }
+            //FailTipData failTips = JsonConvert.DeserializeObject<FailTipData>(text_level_tips.Buffer.Text);
+            //if (failTips != null)
+            //{
+            //    levelData.fail_tips = failTips;
+            //}
+            //if (!string.IsNullOrEmpty(text_level_comments.Buffer.Text))
+            //{
+            //    levelData.comments = text_level_comments.Buffer.Text;
+            //}
 
             List<CustomerOrder> orders = new List<CustomerOrder>();
             List<CustomerOrder> guideOrders = new List<CustomerOrder>();
@@ -487,13 +504,14 @@ namespace LevelEditor
                 do
                 {
                     CustomerOrder ord = new CustomerOrder();
-                    ord.weight = float.Parse((string)m_orderListStore.GetValue(iter, 2));
-                    ord.interval.min = (int)m_orderListStore.GetValue(iter, 3);
-                    ord.interval.max = (int)m_orderListStore.GetValue(iter, 4);
-                    ord.latestFirstCome = (int)m_orderListStore.GetValue(iter, 5);
-                    bool isGuide = (bool)m_orderListStore.GetValue(iter, 6);
-                    ord.customer = (string)m_orderListStore.GetValue(iter, 7);
-                    ord.foods = (List<string>)m_orderListStore.GetValue(iter, 8);
+                    ord.weight = float.Parse((string)m_orderListStore.GetValue(iter, (int)OrderSeq.weiget));
+                    ord.interval.min = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.minInterval);
+                    ord.interval.max = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.maxInterval);
+                    ord.randomFoodStep = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.randomFood);
+                    ord.latestFirstCome = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.lastestCome);
+                    bool isGuide = (bool)m_orderListStore.GetValue(iter, (int)OrderSeq.guide);
+                    ord.customer = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.customerKey);
+                    ord.foods = (List<string>)m_orderListStore.GetValue(iter, (int)OrderSeq.foods);
 
                     if (isGuide)
                     {
@@ -533,7 +551,12 @@ namespace LevelEditor
                 float scale = (float)iconSize / pb.Height;
                 Pixbuf custIcon = pb.ScaleSimple((int)(scale * pb.Width), iconSize, InterpType.Hyper);
 
-                pb = new Pixbuf(Utils.GetFoodImagePath(ord.foods[0]));
+                if(ord.foods.Count > 0)
+                {
+                    pb = new Pixbuf(Utils.GetFoodImagePath(ord.foods[0]));  
+                }else{
+                    pb = Utils.GetGeneralIcon();
+                }
                 scale = (float)iconSize / pb.Height;
                 Pixbuf foodIcon;
                 int count = ord.foods.Count;
@@ -585,7 +608,7 @@ namespace LevelEditor
                     }
                 }
 
-                m_orderListStore.AppendValues(custIcon, foodIcon, ord.weight.ToString(), ord.interval.min, ord.interval.max, ord.latestFirstCome, isGuide, ord.customer, ord.foods);
+                m_orderListStore.AppendValues(custIcon, foodIcon, ord.weight.ToString(), ord.interval.min, ord.interval.max, ord.randomFoodStep, ord.latestFirstCome, isGuide, ord.customer, ord.foods);
             }
         }
 
@@ -621,10 +644,11 @@ namespace LevelEditor
                 float weight;
                 if (Utils.ParseFloat(args.NewText, out weight, this) && weight >= 0.01f)
                 {
-                    m_orderListStore.SetValue(iter, 2, args.NewText);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, weight.ToString());
 
-                    m_orderListStore.SetValue(iter, 3, 0);
-                    m_orderListStore.SetValue(iter, 4, 0);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, 0);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.maxInterval, 0);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, "none");
                 }
             }
         }
@@ -637,15 +661,15 @@ namespace LevelEditor
                 int num;
                 if (Utils.ParseInteger(args.NewText, out num, this) && num >= 0)
                 {
-                    m_orderListStore.SetValue(iter, 3, num);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, num);
 
                     if (num > 0)
                     {
                         m_orderListStore.SetValue(iter, 2, "0");
-                        int end = (int)m_orderListStore.GetValue(iter, 4);
+                        int end = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.maxInterval);
                         if (end < num)
                         {
-                            m_orderListStore.SetValue(iter, 4, num + 1);
+                            m_orderListStore.SetValue(iter, (int)OrderSeq.maxInterval, num + 1);
                         }
                     }
                 }
@@ -660,21 +684,46 @@ namespace LevelEditor
                 int num;
                 if (Utils.ParseInteger(args.NewText, out num, this) && num >= 0)
                 {
-                    m_orderListStore.SetValue(iter, 4, num);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.maxInterval, num);
 
                     if (num > 0)
                     {
-                        m_orderListStore.SetValue(iter, 2, "0");
-                        int start = (int)m_orderListStore.GetValue(iter, 3);
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, "0");
+                        int start = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.minInterval);
                         if (start == 0)
                         {
-                            m_orderListStore.SetValue(iter, 3, 1);
+                            m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, 1);
                         }
                         else if (start > num)
                         {
-                            m_orderListStore.SetValue(iter, 3, num);
+                            m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, num);
                         }
                     }
+                }
+            }
+        }
+
+        protected void OnEditedOrderRandomFood(object o, EditedArgs args)
+        {
+            TreeIter iter;
+            if (m_orderListStore.GetIterFromString(out iter, args.Path))
+            {
+                string rule = args.NewText;
+
+                if (rule == "only2" || rule == "only3" || rule == "more2" || rule == "more3" )
+                {
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, "0");
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, rule);
+                }
+                else if(rule == "none" || rule == "")
+                {
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, "none");
+                }
+                else{
+                    MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Close,
+                                                          "不支持的随机食物规则，只能:\nnone,only2,more2,only3,more3\n的一种");
+                    dlg.Run();
+                    dlg.Destroy();
                 }
             }
         }
@@ -687,7 +736,7 @@ namespace LevelEditor
                 int num;
                 if (Utils.ParseInteger(args.NewText, out num, this) && num >= 0)
                 {
-                    m_orderListStore.SetValue(iter, 5, num);
+                    m_orderListStore.SetValue(iter, (int)OrderSeq.lastestCome, num);
                 }
             }
         }
@@ -697,8 +746,8 @@ namespace LevelEditor
             TreeIter iter;
             if (m_orderListStore.GetIterFromString(out iter, args.Path))
             {
-                bool val = (bool)m_orderListStore.GetValue(iter, 6);
-                m_orderListStore.SetValue(iter, 6, !val);
+                bool val = (bool)m_orderListStore.GetValue(iter, (int)OrderSeq.guide);
+                m_orderListStore.SetValue(iter, (int)OrderSeq.guide, !val);
             }
         }
 
@@ -712,6 +761,8 @@ namespace LevelEditor
             m_curLevelId = combobox_level_id.Active + 1;
             text_level_id.Text = m_curLevelId.ToString();
             LoadLevel(m_curLevelId);
+            Utils.AppConfig.select_level = m_curLevelId;
+            Utils.SerializeAppConfig();
         }
 
         protected void OnBtnReloadLevelClicked(object sender, EventArgs e)
@@ -836,28 +887,30 @@ namespace LevelEditor
 
         protected void SwapCustomerOrder(ref TreeIter iter1, ref TreeIter iter2)
         {
-            Pixbuf custIcon1 = (Pixbuf)m_orderListStore.GetValue(iter1, 0);
-            Pixbuf foodIcon1 = (Pixbuf)m_orderListStore.GetValue(iter1, 1);
-            float w1 = float.Parse((string)m_orderListStore.GetValue(iter1, 2));
-            int interval_min1 = (int)m_orderListStore.GetValue(iter1, 3);
-            int interval_max1 = (int)m_orderListStore.GetValue(iter1, 4);
-            int lc1 = (int)m_orderListStore.GetValue(iter1, 5);
-            bool guide1 = (bool)m_orderListStore.GetValue(iter1, 6);
-            string customer1 = (string)m_orderListStore.GetValue(iter1, 7);
-            List<string> foods1 = (List<string>)m_orderListStore.GetValue(iter1, 8);
+            Pixbuf custIcon1 = (Pixbuf)m_orderListStore.GetValue(iter1, (int)OrderSeq.customerIcon);
+            Pixbuf foodIcon1 = (Pixbuf)m_orderListStore.GetValue(iter1, (int)OrderSeq.foodIcon);
+            float w1 = float.Parse((string)m_orderListStore.GetValue(iter1, (int)OrderSeq.weiget));
+            int interval_min1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.minInterval);
+            int interval_max1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.maxInterval);
+            string randomFood1 = (string)m_orderListStore.GetValue(iter1, (int)OrderSeq.randomFood); 
+            int lc1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.lastestCome);
+            bool guide1 = (bool)m_orderListStore.GetValue(iter1, (int)OrderSeq.lastestCome);
+            string customer1 = (string)m_orderListStore.GetValue(iter1, (int)OrderSeq.customerKey);
+            List<string> foods1 = (List<string>)m_orderListStore.GetValue(iter1, (int)OrderSeq.foods);
 
-            Pixbuf custIcon2 = (Pixbuf)m_orderListStore.GetValue(iter2, 0);
-            Pixbuf foodIcon2 = (Pixbuf)m_orderListStore.GetValue(iter2, 1);
-            float w2 = float.Parse((string)m_orderListStore.GetValue(iter2, 2));
-            int interval_min2 = (int)m_orderListStore.GetValue(iter2, 3);
-            int interval_max2 = (int)m_orderListStore.GetValue(iter2, 4);
-            int lc2 = (int)m_orderListStore.GetValue(iter2, 5);
-            bool guide2 = (bool)m_orderListStore.GetValue(iter2, 6);
-            string customer2 = (string)m_orderListStore.GetValue(iter2, 7);
-            List<string> foods2 = (List<string>)m_orderListStore.GetValue(iter2, 8);
+            Pixbuf custIcon2 = (Pixbuf)m_orderListStore.GetValue(iter2, (int)OrderSeq.customerIcon);
+            Pixbuf foodIcon2 = (Pixbuf)m_orderListStore.GetValue(iter2, (int)OrderSeq.foodIcon);
+            float w2 = float.Parse((string)m_orderListStore.GetValue(iter2, (int)OrderSeq.weiget));
+            int interval_min2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.minInterval);
+            int interval_max2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.maxInterval);
+            string randomFood2 = (string)m_orderListStore.GetValue(iter2, (int)OrderSeq.randomFood); 
+            int lc2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.lastestCome);
+            bool guide2 = (bool)m_orderListStore.GetValue(iter2, (int)OrderSeq.lastestCome);
+            string customer2 = (string)m_orderListStore.GetValue(iter2, (int)OrderSeq.customerKey);
+            List<string> foods2 = (List<string>)m_orderListStore.GetValue(iter2, (int)OrderSeq.foods);
 
-            m_orderListStore.SetValues(iter1, custIcon2, foodIcon2, w2.ToString(), interval_min2, interval_max2, lc2, guide2, customer2, foods2);
-            m_orderListStore.SetValues(iter2, custIcon1, foodIcon1, w1.ToString(), interval_min1, interval_max1, lc1, guide1, customer1, foods1);
+            m_orderListStore.SetValues(iter1, custIcon2, foodIcon2, w2.ToString(), interval_min2, interval_max2, randomFood2, lc2, guide2, customer2, foods2);
+            m_orderListStore.SetValues(iter2, custIcon1, foodIcon1, w1.ToString(), interval_min1, interval_max1, randomFood1, lc1, guide1, customer1, foods1);
         }
 
         protected void OnButtonOrderUpClicked(object sender, EventArgs e)
@@ -951,13 +1004,38 @@ namespace LevelEditor
 
         protected void OnBtnConfigSecretCustomersClicked(object sender, EventArgs e)
         {
-            List<string> customerList = new List<string>(m_curRestData.customer_list);
-            customerList.AddRange(m_curRestData.special_customer_list);
-            List<SecretCustomer> selectedCustomers = null;
-            string jsonStr = text_secret_customers.Text;
-            if (!string.IsNullOrEmpty(jsonStr))
+            List<string> customerList = new List<string>();
+            TreeIter iter;
+            if (m_orderListStore.GetIterFirst(out iter))
             {
-                selectedCustomers = JsonConvert.DeserializeObject<List<SecretCustomer>>(jsonStr);
+                do
+                {
+                    string customer = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.customerKey);
+                    customerList.Add(customer);
+                } while (m_orderListStore.IterNext(ref iter));
+            }
+
+            List<SecretCustomer> selectedCustomers = new List<SecretCustomer>();
+            string secText = text_secret_customers.Text;
+            if (!string.IsNullOrEmpty(secText))
+            {
+                string[] secList = secText.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach(string element in secList)
+                {
+                    SecretCustomer secretCustomer = new SecretCustomer();
+                    if (secText.Contains("<"))
+                    {
+                        int index = element.IndexOf('<');
+                        secretCustomer.customer = element.Substring(0, index);
+                        string showOrder = element.Substring(index + 1, element.Length - index - 2);
+                        secretCustomer.showOrder = showOrder.ToInt32();
+                    }
+                    else
+                    {
+                        secretCustomer.customer = element;
+                    }
+                    selectedCustomers.Add(secretCustomer);
+                }
             }
             SecretCustomerEditDialog dlg = new SecretCustomerEditDialog(this, customerList, selectedCustomers);
             if (dlg.Run() == (int)ResponseType.Ok)
@@ -965,7 +1043,23 @@ namespace LevelEditor
                 selectedCustomers = dlg.SecretCustomers;
                 if (selectedCustomers != null && selectedCustomers.Count > 0)
                 {
-                    text_secret_customers.Text = JsonConvert.SerializeObject(selectedCustomers);
+                    string text = "";
+                    var it = selectedCustomers.GetEnumerator();
+                    bool hasNext = it.MoveNext();
+                    while(hasNext)
+                    {
+                        SecretCustomer secCus = it.Current;
+                        text += secCus.customer;
+                        if (secCus.showOrder > 0){
+                            text += string.Format("<{0}>", secCus.showOrder);
+                        }
+                        hasNext = it.MoveNext();
+                        if (hasNext)
+                        {
+                            text += ";";
+                        }
+                    }
+                    text_secret_customers.Text = text;
                 }
                 else
                 {
@@ -1000,7 +1094,6 @@ namespace LevelEditor
             {
                 try
                 {
-
                     failTips = JsonConvert.DeserializeObject<FailTipData>(jsonStr);
                 }
                 catch (Exception e)
@@ -1024,10 +1117,11 @@ namespace LevelEditor
         protected void OnButtonEditUnlockItemsClicked(object sender, EventArgs e)
         {
             List<int> unlockItems = null;
-            string jsonStr = text_unlock_item.Text;
-            if (!string.IsNullOrEmpty(jsonStr))
+            string unlockStrs = text_unlock_item.Text;
+            if (!string.IsNullOrEmpty(unlockStrs))
             {
-                unlockItems = JsonConvert.DeserializeObject<List<int>>(jsonStr);
+                var unlockStrList = unlockStrs.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                ConvertList.List_String2Int(unlockStrList, out unlockItems);
             }
             UnlockItemsDialog dlg = new UnlockItemsDialog(this, unlockItems);
             if (dlg.Run() == (int)ResponseType.Ok)
@@ -1035,7 +1129,7 @@ namespace LevelEditor
                 unlockItems = dlg.UnlockItems;
                 if (unlockItems != null)
                 {
-                    text_unlock_item.Text = JsonConvert.SerializeObject(unlockItems);
+                    text_unlock_item.Text = ConvertList.List2String<int>(unlockItems, ',');
                 }
             }
             dlg.Destroy();

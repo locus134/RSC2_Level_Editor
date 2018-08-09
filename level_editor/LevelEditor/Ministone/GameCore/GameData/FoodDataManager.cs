@@ -11,7 +11,7 @@ namespace Ministone.GameCore.GameData
     {
         static FoodDataManager _instance = null;
 
-        SQLiteConnection m_sqlCnn = null;
+        string m_dbPath;
 
         List<FoodData> m_foodList;
         KeyIndexMap<int> m_indexMap;
@@ -43,14 +43,15 @@ namespace Ministone.GameCore.GameData
             {
                 return false;
             }
+            m_dbPath = dbPath;
 
-            m_sqlCnn = new SQLiteConnection();
+            var sqlCnn = new SQLiteConnection();
             string cnnStr = string.Format("Data Source={0};Version=3", dbPath);
-            m_sqlCnn.ConnectionString = cnnStr;
-            m_sqlCnn.Open();
+            sqlCnn.ConnectionString = cnnStr;
+            sqlCnn.Open();
 
             string sql_select = "SELECT FoodID,KeyName,name_cn,TexturePath,FoodPrice,MakeTime,BurnTime,CookingwareType,Materiallist FROM food";
-            SQLiteCommand cmd = m_sqlCnn.CreateCommand();
+            SQLiteCommand cmd = sqlCnn.CreateCommand();
             cmd.CommandText = sql_select;
             var reader = cmd.ExecuteReader();
             if(reader == null)
@@ -82,22 +83,10 @@ namespace Ministone.GameCore.GameData
                 m_indexMap.AddValue(foodData.key, foodData.id, m_foodList.Count - 1);
             }
 
-
-            //var list = JsonConvert.DeserializeObject<List<FoodData>>(dbPath);
-            //if (list == null)
-            //{
-            //    Debug.WriteLine("Error reading Food Data from JSON!");
-            //    return false;
-            //}
-
-            //m_foodList = list;
-            //m_indexMap.Clear();
-            //m_foodPriceDict.Clear();
-            //for (int i = 0; i < m_foodList.Count; ++ i)
-            //{
-            //    FoodData fd = m_foodList[i];
-            //    m_indexMap.AddValue(fd.key, fd.id, i);
-            //}
+            reader.Close();
+            cmd.Dispose();
+            sqlCnn.Close();
+            sqlCnn.Dispose();
 
             for (int i = 0; i < m_foodList.Count; ++i)
             {

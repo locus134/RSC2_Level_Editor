@@ -12,13 +12,12 @@ namespace Ministone.GameCore.GameData
         List<CustomerData> m_customerList;
         KeyIndexMap<int> m_indexMap;
 
-        SQLiteConnection m_cnn;
+        string m_dbPath;
 
         private CustomerDataManager()
         {
             m_customerList = new List<CustomerData>();
             m_indexMap = new KeyIndexMap<int>();
-            m_cnn = null;
         }
 
         public static CustomerDataManager GetInstance()
@@ -36,12 +35,13 @@ namespace Ministone.GameCore.GameData
             {
                 return false;
             }
+            m_dbPath = dbPath;
 
-            m_cnn = new SQLiteConnection();
-            m_cnn.ConnectionString = string.Format("Data Source={0};Version = 3", dbPath);
-            m_cnn.Open();
+            var sqlCnn = new SQLiteConnection();
+            sqlCnn.ConnectionString = string.Format("Data Source={0};Version = 3", dbPath);
+            sqlCnn.Open();
 
-            var cmd = m_cnn.CreateCommand();
+            var cmd = sqlCnn.CreateCommand();
             cmd.CommandText = "Select customer_id,customer_key,displayname_cn,isLeftGarbage,type,sourceDir,icon_file FROM customerInfo";
 
             var reader = cmd.ExecuteReader();
@@ -68,22 +68,9 @@ namespace Ministone.GameCore.GameData
                 m_customerList.Add(cusData);
                 m_indexMap.AddValue(cusData.key, cusData.id, m_customerList.Count - 1);
             }
-
-
-            //List<CustomerData> list = JsonConvert.DeserializeObject<List<CustomerData>>(jsonStr);
-            //if (list == null)
-            //{
-            //    Debug.WriteLine("Error loading customer data from JSON!");
-            //    return false;
-            //}
-
-            //m_customerList = list;
-            //m_indexMap.Clear();
-            //for (int i = 0; i < m_customerList.Count; ++ i)
-            //{
-            //    CustomerData cd = m_customerList[i];
-            //    m_indexMap.AddValue(cd.key, cd.id, i);
-            //}
+            reader.Close();
+            sqlCnn.Close();
+            sqlCnn.Dispose();
 
             return true;
         }

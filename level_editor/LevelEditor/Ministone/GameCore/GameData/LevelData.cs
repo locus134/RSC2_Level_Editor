@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using Ministone.GameCore.GameData.Generic;
-
+using System;
 
 namespace Ministone.GameCore.GameData
 {
@@ -53,7 +53,7 @@ namespace Ministone.GameCore.GameData
         public string customer;                     // 顾客名称
         public List<string> foods = new List<string>();                  // 所点的食物列表
         public RangeData<int> interval = new RangeData<int>(0, 0);             // 出现的间隔
-        public string randomFoodStep = "";
+        public string randomFoodStep = "none";
     }
 
     public class FailTipData
@@ -65,9 +65,8 @@ namespace Ministone.GameCore.GameData
 
     public class SecretCustomer
     {
-        public string customer;
-        public bool isRemind;               //  是否会刚出订单时显示食物，然后再变成问号
-        public List<int> showOrders = new List<int>();               // 第几次出现之前都会显示订单
+        public string customer = "";
+        public int showOrder = 0;              // 第几次出现之前都会显示订单
     }
 
     public class Requirements
@@ -340,5 +339,89 @@ namespace Ministone.GameCore.GameData
             get { return m_comments; }
             set { m_comments = value; }
         }
+
+        public void parseSecretCustomer(string str)
+        {
+            secret_customers.Clear();
+            var secCusList = str.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries); ;
+            if (secCusList.Length > 0)
+            {
+                //TODO: 读取神秘顾客
+                foreach (string element in secCusList)
+                {
+                    SecretCustomer secretCustomer = new SecretCustomer();
+                    if (element.Contains("<"))
+                    {
+                        int index = element.IndexOf('<');
+                        secretCustomer.customer = element.Substring(0, index);
+                        string showOrder = element.Substring(index + 1, element.Length - index - 2);
+                        secretCustomer.showOrder = showOrder.ToInt32();
+                    }
+                    else
+                    {
+                        secretCustomer.customer = element;
+                    }
+                    secret_customers.Add(secretCustomer);
+                }
+            }
+        }
+
+        public void parseRequirement(string requirementStr)
+        {
+            if (requirementStr.Length > 0)
+            {
+                var reqStrList = requirementStr.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries); ;
+                foreach (string reqStr in reqStrList)
+                {
+                    if (reqStr == "no_lost")
+                    {
+                        requirements.allowLostCustomer = false;
+                    }
+                    else if (reqStr == "no_burn")
+                    {
+                        requirements.allowBurn = false;
+                    }
+                    else
+                    {
+                        if (reqStr.Length > 0 && reqStr.Contains("*"))
+                        {
+                            int index = reqStr.IndexOf('*');
+                            string key = reqStr.Substring(0, index);
+                            int num = reqStr.Substring(index + 1, reqStr.Length - index - 1).ToInt32();
+
+                            if (CustomerDataManager.GetInstance().IsCustomerKey(key))
+                            {
+                                requirements.requiredCustomers.Add(new Requirements.NameAndNumber(key, num));
+                            }
+                            else if (FoodDataManager.GetInstance().IsFoodKey(key))
+                            {
+                                requirements.requiredFoods.Add(new Requirements.NameAndNumber(key, num));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void parseRewards(string rewardsStr)
+        {
+            string[] rewardStrList = rewardsStr.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            if (rewardStrList.Length > 0)
+            {
+                foreach (string rewardStr in rewardStrList)
+                {
+                    string content = rewardStr.Substring(1, rewardStr.Length - 2);
+                    int pos = content.IndexOf('*');
+                    string key = content.Substring(0, pos);
+                    int number = content.Substring(pos + 1, content.Length - pos - 1).ToInt32();
+
+                    RewardData rd = new RewardData();
+                    rd.itemKey = key;
+                    rd.itemCount = number;
+                    rewards.Add(rd);
+                }
+            }
+        }
+
     }
 }

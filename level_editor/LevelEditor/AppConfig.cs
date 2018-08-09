@@ -6,6 +6,7 @@ namespace LevelEditor
     {
         public string db_path;
         public string sd_path;
-        public string select_restaurant;
+        public string select_map;
+        public int select_level;
     }
 }

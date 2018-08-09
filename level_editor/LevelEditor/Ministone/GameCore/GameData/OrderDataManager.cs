@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using Newtonsoft.Json;
 using System.Data.SQLite;
+using Ministone.GameCore.GameData.Generic;
+using System;
 
 namespace Ministone.GameCore.GameData
 {
@@ -15,7 +17,8 @@ namespace Ministone.GameCore.GameData
         Dictionary<string, List<int>> m_customerIndex;  // 顾客索引表
         Dictionary<string, List<int>> m_foodIndex;      // 食物索引表
 
-        SQLiteConnection m_cnn;
+        string m_dbPath;
+        string m_connectString;
 
         private OrderDataManager()
         {
@@ -83,6 +86,126 @@ namespace Ministone.GameCore.GameData
             }
         }
 
+        public void AddOrders(List<OrderData> orders)
+        {
+            var cnn = new SQLiteConnection(m_connectString);
+            if (cnn.State != System.Data.ConnectionState.Connecting)
+            {
+                cnn.Open();
+
+                var cmd = cnn.CreateCommand();
+                cmd.CommandText = "INSERT INTO orderfood(customer_id,customer_key,Name_CN,food_id,food_key,foodname_cn,wait_time,tips,consider_time) VALUES(@customer_id,@customer_key,@Name_CN,@food_id,@food_key,@foodname_cn,@wait_time,@tips,@consider_time)";
+
+                foreach(OrderData ord in orders)
+                {
+                    var cusInfo = CustomerDataManager.GetInstance().GetCustomer(ord.customer);
+                    var foodInfo = FoodDataManager.GetInstance().GetFood(ord.food);
+
+                    cmd.Parameters.Add("customer_id", System.Data.DbType.Int32).Value = cusInfo.id;
+                    cmd.Parameters.Add("customer_key", System.Data.DbType.String).Value = cusInfo.key;
+                    cmd.Parameters.Add("Name_CN", System.Data.DbType.String).Value = cusInfo.display_name["cn"];
+
+                    cmd.Parameters.Add("food_id", System.Data.DbType.Int32).Value = foodInfo.id;
+                    cmd.Parameters.Add("food_key", System.Data.DbType.String).Value = foodInfo.key;
+                    cmd.Parameters.Add("foodname_cn", System.Data.DbType.String).Value = foodInfo.display_name["cn"];
+
+                    cmd.Parameters.Add("wait_time", System.Data.DbType.Double).Value = ord.wait_time;
+                    cmd.Parameters.Add("tips", System.Data.DbType.Int32).Value = ord.tip;
+                    cmd.Parameters.Add("consider_time", System.Data.DbType.Double).Value = ord.consider_time;
+                    int ret = cmd.ExecuteNonQuery();
+                    MyDebug.WriteLine("Add Order result : " + ret);
+                }
+                cmd.Dispose();
+            }
+        
+            cnn.Close();
+            cnn.Dispose();
+        }
+
+        public void DeleteOrders(List<OrderData> orders)
+        {
+            var cnn = new SQLiteConnection(m_connectString);
+            if (cnn.State != System.Data.ConnectionState.Connecting)
+            {
+                cnn.Open();
+
+                var cmd = cnn.CreateCommand();
+                foreach (OrderData ord in orders)
+                {
+                    cmd.CommandText = string.Format("DELETE FROM orderfood WHERE customer_key={0},food_key={1}", ord.customer, ord.food);
+                    try{
+                        int ret = cmd.ExecuteNonQuery();
+                        MyDebug.WriteLine("Delete Order result : " + ret); 
+                    }catch(Exception e)
+                    {
+                        MyDebug.WriteLine(e);
+                    }
+
+                }
+                cmd.Dispose();
+            }
+            cnn.Close();
+            cnn.Dispose();
+        }
+
+        public void UpdateOrders(List<OrderData> orders)
+        {
+            var cnn = new SQLiteConnection(m_connectString);
+            if (cnn.State != System.Data.ConnectionState.Connecting)
+            {
+                cnn.Open();
+
+                var cmd = cnn.CreateCommand();
+
+                string findFormat = "SELECT * FROM orderfood WHERE customer_key={0},food_key={1}";
+                string updateFormat = "UPDATE orderfood SET customer_id=@customer_id,customer_key=@customer_key,Name_CN=@Name_CN,food_id=@food_id,food_key=@food_key,foodname_cn=@foodname_cn,wait_time=@wait_time,tips=@tips,consider_time=@consider_time WHERE customer_key={0},food_key={1}";
+                string addCmd = "INSERT INTO orderfood(customer_id,customer_key,Name_CN,food_id,food_key,foodname_cn,wait_time,tips,consider_time) VALUES(@customer_id,@customer_key,@Name_CN,@food_id,@food_key,@foodname_cn,@wait_time,@tips,@consider_time)";
+                foreach (OrderData ord in orders)
+                {
+                    cmd.CommandText = string.Format(findFormat, ord.customer, ord.food);
+                    int ret = cmd.ExecuteNonQuery();
+                    if(ret == 1)
+                    {// 找到了
+                        cmd.CommandText = string.Format(updateFormat, ord.customer, ord.food);
+                        MyDebug.WriteLine("Update Order");
+                    }
+                    else
+                    {// 找不到
+                        cmd.CommandText = addCmd;
+                        MyDebug.WriteLine("Create Order");
+                    }
+
+                    var cusInfo = CustomerDataManager.GetInstance().GetCustomer(ord.customer);
+                    var foodInfo = FoodDataManager.GetInstance().GetFood(ord.food);
+
+                    cmd.Parameters.Add("customer_id", System.Data.DbType.Int32).Value = cusInfo.id;
+                    cmd.Parameters.Add("customer_key", System.Data.DbType.String).Value = cusInfo.key;
+                    cmd.Parameters.Add("Name_CN", System.Data.DbType.String).Value = cusInfo.display_name["cn"];
+
+                    cmd.Parameters.Add("food_id", System.Data.DbType.Int32).Value = foodInfo.id;
+                    cmd.Parameters.Add("food_key", System.Data.DbType.String).Value = foodInfo.key;
+                    cmd.Parameters.Add("foodname_cn", System.Data.DbType.String).Value = foodInfo.display_name["cn"];
+
+                    cmd.Parameters.Add("wait_time", System.Data.DbType.Double).Value = ord.wait_time;
+                    cmd.Parameters.Add("tips", System.Data.DbType.Int32).Value = ord.tip;
+                    cmd.Parameters.Add("consider_time", System.Data.DbType.Double).Value = ord.consider_time;
+
+                    try
+                    {
+                        ret = cmd.ExecuteNonQuery();
+                        MyDebug.WriteLine("Update Order result : " + ret);
+                    }
+                    catch (Exception e)
+                    {
+                        MyDebug.WriteLine(e);
+                    }
+                }
+            }
+
+            cnn.Close();
+        }
+
+
         // 加载JSON格式订单配置数据
         public bool LoadFromDBFile(string dbPath)
         {
@@ -90,12 +213,13 @@ namespace Ministone.GameCore.GameData
             {
                 return false;
             }
+            m_dbPath = dbPath;
+            m_connectString = string.Format("Data Source={0};Version=3", dbPath);
 
-            m_cnn = new SQLiteConnection();
-            m_cnn.ConnectionString = string.Format("Data Source={0};Version=3", dbPath);
-            m_cnn.Open();
+            var sqlCnn = new SQLiteConnection(m_connectString);
+            sqlCnn.Open();
 
-            var cmd = m_cnn.CreateCommand();
+            var cmd = sqlCnn.CreateCommand();
             cmd.CommandText = "Select customer_key,food_key,wait_time,tips,consider_time FROM orderfood";
             var reader = cmd.ExecuteReader();
             if (reader == null)
@@ -121,7 +245,9 @@ namespace Ministone.GameCore.GameData
 
                 orderList.Add(ordData);
             }
-            //List<OrderData> orderList = JsonConvert.DeserializeObject<List<OrderData>>(jsonStr);
+            reader.Close();
+            sqlCnn.Close();
+
             SetAllOrders(orderList);
 
             return true;

@@ -5,6 +5,7 @@ using System.Data.SQLite;
 using System;
 using Ministone.GameCore.GameData.Generic;
 using System.Text;
+using System.IO;
 
 namespace Ministone.GameCore.GameData
 {
@@ -19,7 +20,7 @@ namespace Ministone.GameCore.GameData
         HashSet<string> m_customers = new HashSet<string>();
         HashSet<string> m_foods = new HashSet<string>();
 
-        SQLiteConnection m_cnn;
+        string m_dbPath;
 
         private LevelDataManager()
         {
@@ -49,36 +50,19 @@ namespace Ministone.GameCore.GameData
 
         public bool initWithDBFile(string dbPath)
         {
-            m_cnn = new SQLiteConnection();
-            m_cnn.ConnectionString = "data source = " + dbPath;
-            m_cnn.Open();
-
-            if (m_cnn == null)
+            if(string.IsNullOrEmpty(dbPath))
             {
-                Generic.MyDebug.Assert(false, "Initialize LevelDataManager with DBFile occure error");
                 return false;
+            }
+
+            if(File.Exists(dbPath))
+            {
+                m_dbPath = dbPath;
             }
 
             return true;
         }
 
-        //public bool LoadFromDBFile(string restaurant, string jsonStr)
-        //{
-        //    if (string.IsNullOrEmpty(jsonStr) || string.IsNullOrEmpty(restaurant))
-        //    {
-        //        return false;
-        //    }
-
-        //    List<LevelData> levels = JsonConvert.DeserializeObject<List<LevelData>>(jsonStr);
-        //    if (levels == null)
-        //    {
-        //        Debug.WriteLine("Failed to load level data for {0} from JSON!", restaurant);
-        //        return false;
-        //    }
-
-        //    SetRestauranttLevelData(restaurant, levels);
-        //    return true;
-        //}
 
         public bool LoadLevelDataForMap(string mapKey)
         {
@@ -87,10 +71,16 @@ namespace Ministone.GameCore.GameData
 
             var mapData = MapDataManager.GetInstance().GetMapData(mapKey);
 
+            var sqlCnn = new SQLiteConnection();
+            sqlCnn.ConnectionString = string.Format("Data Source={0};Version = 3", m_dbPath);
+            sqlCnn.Open();
+
+            var cmd = sqlCnn.CreateCommand();
+
             List<LevelData> levels = new List<LevelData>();
             for (int i = mapData.start_level; i <= mapData.end_level; i++)
             {
-                var cmd = m_cnn.CreateCommand();
+                
                 cmd.CommandText = string.Format("SELECT " +
                                                 "level,type,total,star_score,orders,special_orders,new_foods,guide_orders," +
                                                 "anyfood_orders,max_order,order_interval,first_arrival,waiting_time_decay,secret_customers," +
@@ -154,31 +144,9 @@ namespace Ministone.GameCore.GameData
                     {
                         lvData.waiting_decay.set(decayInfo[0].ToFloat(), decayInfo[1].ToFloat());
                     }
-                    var secCusList = getNextString().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries); ;
-                    if (secCusList.Length > 0)
-                    {
-                        //TODO: 读取神秘顾客
-                        foreach (string element in secCusList)
-                        {
-                            SecretCustomer secretCustomer = new SecretCustomer();
-                            if (element.Contains("<"))
-                            {
-                                int index = element.IndexOf('<');
-                                secretCustomer.customer = element.Substring(0, index);
-                                string showOrders = element.Substring(index + 1, element.Length - index - 2);
-                                var showIdxs = showOrders.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                                foreach (string showIdx in showIdxs)
-                                {
-                                    secretCustomer.showOrders.Add(showIdx.ToInt32());
-                                }
-                            }
-                            else
-                            {
-                                secretCustomer.customer = element;
-                            }
-                            lvData.secret_customers.Add(secretCustomer);
-                        }
-                    }
+
+                    string secretStr = getNextString();
+                    lvData.parseSecretCustomer(secretStr);
 
                     var litter_interval = getNextString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries); ;
                     if (litter_interval.Length > 0)
@@ -199,39 +167,7 @@ namespace Ministone.GameCore.GameData
                     }
 
                     string requirementStr = getNextString();
-                    if (requirementStr.Length > 0)
-                    {
-                        var reqStrList = requirementStr.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries); ;
-                        foreach (string reqStr in reqStrList)
-                        {
-                            if (reqStr == "no_lost")
-                            {
-                                lvData.requirements.allowLostCustomer = false;
-                            }
-                            else if (reqStr == "no_burn")
-                            {
-                                lvData.requirements.allowBurn = false;
-                            }
-                            else
-                            {
-                                if (reqStr.Length > 0 && reqStr.Contains("*"))
-                                {
-                                    int index = reqStr.IndexOf('*');
-                                    string key = reqStr.Substring(0, index);
-                                    int num = reqStr.Substring(index + 1, reqStr.Length - index - 1).ToInt32();
-
-                                    if (CustomerDataManager.GetInstance().IsCustomerKey(key))
-                                    {
-                                        lvData.requirements.requiredCustomers.Add(new Requirements.NameAndNumber(key, num));
-                                    }
-                                    else if (FoodDataManager.GetInstance().IsFoodKey(key))
-                                    {
-                                        lvData.requirements.requiredFoods.Add(new Requirements.NameAndNumber(key, num));
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    lvData.parseRequirement(requirementStr);
 
                     string[] organics = getNextString().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                     if (organics.Length > 0)
@@ -250,42 +186,29 @@ namespace Ministone.GameCore.GameData
                         }
                     }
 
-                    string[] rewards = getNextString().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (rewards.Length > 0)
-                    {
-                        foreach (string rewardStr in rewards)
-                        {
-                            string content = rewardStr.Substring(1, rewardStr.Length - 2);
-                            int pos = content.IndexOf('*');
-                            string key = content.Substring(0, pos);
-                            int number = content.Substring(pos + 1, content.Length - pos - 1).ToInt32();
-
-                            RewardData rd = new RewardData();
-                            rd.itemKey = key;
-                            rd.itemCount = number;
-                            lvData.rewards.Add(rd);
-                        }
-                    }
+                    lvData.parseRewards(getNextString());
 
                     levels.Add(lvData);
                 }
+                reader.Close();
             }
+            sqlCnn.Close();
+            sqlCnn.Dispose();
+
+            //Console.WriteLine(mapData.key + ":");
             //StringBuilder foods = new StringBuilder();
-            //foreach (string foodKey in m_foods)
+            //foreach(string food in m_foods)
             //{
-            //    foods.Append(foodKey).Append(";");
+            //    foods.Append(food).Append(";");
             //}
-            //Console.WriteLine(mapKey + " foods     : " + foods);
+            //Console.WriteLine("Foods:" + foods);
 
             //StringBuilder customers = new StringBuilder();
-            //foreach(string cusKey in m_customers)
+            //foreach (string customer in m_customers)
             //{
-            //    customers.Append(cusKey).Append(";");
+            //    customers.Append(customer).Append(";");
             //}
-            //Console.WriteLine(mapKey + " customers : " + customers + "\n");
-
-
-            //Console.WriteLine("\n");
+            //Console.WriteLine("Customers:" + customers);
 
             SetMapLevelDatas(mapKey, levels);
 
@@ -329,10 +252,14 @@ namespace Ministone.GameCore.GameData
 
                         MyDebug.Assert(CustomerDataManager.GetInstance().IsCustomerKey(order.customer), "Error customer key : " + order.customer + ", Order :" + element);
                         m_customers.Add(order.customer);
-                        foreach (string food in order.foods)
+                        if(order.foods.Count == 1)
                         {
-                            MyDebug.Assert(FoodDataManager.GetInstance().IsFoodKey(food), "Error food key : " + food + ", Order :" + element);
-                            m_foods.Add(food);
+                            MyDebug.Assert(FoodDataManager.GetInstance().IsFoodKey(order.foods[0]), "Error food key : " + order.foods[0] + ", Order :" + element);
+                            m_foods.Add(order.foods[0]);
+                        }else{
+                            string combineFood = string.Format("{0}&{1}", order.foods[0], order.foods[1]);
+                            MyDebug.Assert(FoodDataManager.GetInstance().IsFoodKey(combineFood), "Error food key : " + combineFood + ", Order :" + element);
+                            m_foods.Add(combineFood);
                         }
                     }
                     else
@@ -385,10 +312,16 @@ namespace Ministone.GameCore.GameData
 
                     MyDebug.Assert(CustomerDataManager.GetInstance().IsCustomerKey(order.customer), "Error customer key : " + order.customer + ", Order :" + element);
                     m_customers.Add(order.customer);
-                    foreach (string food in order.foods)
+                    if (order.foods.Count == 1)
                     {
-                        MyDebug.Assert(FoodDataManager.GetInstance().IsFoodKey(food), "Error food key : " + food + ", Order :" + element);
-                        m_foods.Add(food);
+                        MyDebug.Assert(FoodDataManager.GetInstance().IsFoodKey(order.foods[0]), "Error food key : " + order.foods[0] + ", Order :" + element);
+                        m_foods.Add(order.foods[0]);
+                    }
+                    else
+                    {
+                        string combineFood = string.Format("{0}&{1}", order.foods[0], order.foods[1]);
+                        MyDebug.Assert(FoodDataManager.GetInstance().IsFoodKey(combineFood), "Error food key : " + combineFood + ", Order :" + element);
+                        m_foods.Add(combineFood);
                     }
                 }
             }
@@ -419,7 +352,7 @@ namespace Ministone.GameCore.GameData
                     order.interval.max = interval[1].ToInt32();
 
                     int lastIdx = sourceStr.LastIndexOf(',');
-                    order.randomFoodStep = sourceStr.Substring(index + 1, lastIdx - index - 1);
+                    order.randomFoodStep = sourceStr.Substring(index + 2, lastIdx - index - 2);
 
                     string customerName = sourceStr.Substring(lastIdx + 1, sourceStr.Length - lastIdx - 1);
                     order.customer = customerName;

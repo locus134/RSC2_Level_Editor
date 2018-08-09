@@ -12,7 +12,7 @@ namespace Ministone.GameCore.GameData
         List<MapData> m_mapDataList;
         KeyIndexMap<int> m_indexMap;
 
-        SQLiteConnection m_cnn;
+        string m_dbPath;
 
         private MapDataManager()
         {
@@ -35,11 +35,11 @@ namespace Ministone.GameCore.GameData
             {
                 return false;
             }
+            m_dbPath = dbPath;
+            var sqlCnn = new SQLiteConnection("data source=" + dbPath);
+            sqlCnn.Open();
 
-            m_cnn = new SQLiteConnection("data source=" + dbPath);
-            m_cnn.Open();
-
-            var cmd = m_cnn.CreateCommand();
+            var cmd = sqlCnn.CreateCommand();
             cmd.CommandText = "SELECT * FROM Map";
             var reader = cmd.ExecuteReader();
             if(reader == null)
@@ -99,20 +99,8 @@ namespace Ministone.GameCore.GameData
             }
 
             reader.Close();
-            m_cnn.Close();
+            sqlCnn.Close();
 
-            //m_mapDataList = JsonConvert.DeserializeObject<List<MapData>>(jsonStr);
-            //m_indexMap.Clear();
-            //if (m_mapDataList == null)
-            //{
-            //    Debug.WriteLine("Error loading Restaurant Data from JSON!");
-            //    return false;
-            //}
-            //for (int i = 0; i < m_mapDataList.Count; ++ i)
-            //{
-            //    MapData rd = m_mapDataList[i];
-            //    m_indexMap.AddValue(rd.key, rd.id, i);
-            //}
             return true;
         }
 
