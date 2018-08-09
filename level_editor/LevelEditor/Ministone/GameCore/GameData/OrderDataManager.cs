@@ -132,12 +132,13 @@ namespace Ministone.GameCore.GameData
                 var cmd = cnn.CreateCommand();
                 foreach (OrderData ord in orders)
                 {
-                    cmd.CommandText = string.Format("DELETE FROM orderfood WHERE customer_key={0},food_key={1}", ord.customer, ord.food);
+                    cmd.CommandText = string.Format("DELETE FROM orderfood WHERE customer_key='{0}' AND food_key='{1}'", ord.customer, ord.food);
                     try{
                         int ret = cmd.ExecuteNonQuery();
                         MyDebug.WriteLine("Delete Order result : " + ret); 
                     }catch(Exception e)
                     {
+                        MyDebug.WriteLine("Delete Order error"); 
                         MyDebug.WriteLine(e);
                     }
 
@@ -148,6 +149,8 @@ namespace Ministone.GameCore.GameData
             cnn.Dispose();
         }
 
+
+
         public void UpdateOrders(List<OrderData> orders)
         {
             var cnn = new SQLiteConnection(m_connectString);
@@ -155,50 +158,59 @@ namespace Ministone.GameCore.GameData
             {
                 cnn.Open();
 
-                var cmd = cnn.CreateCommand();
-
-                string findFormat = "SELECT * FROM orderfood WHERE customer_key={0},food_key={1}";
-                string updateFormat = "UPDATE orderfood SET customer_id=@customer_id,customer_key=@customer_key,Name_CN=@Name_CN,food_id=@food_id,food_key=@food_key,foodname_cn=@foodname_cn,wait_time=@wait_time,tips=@tips,consider_time=@consider_time WHERE customer_key={0},food_key={1}";
                 string addCmd = "INSERT INTO orderfood(customer_id,customer_key,Name_CN,food_id,food_key,foodname_cn,wait_time,tips,consider_time) VALUES(@customer_id,@customer_key,@Name_CN,@food_id,@food_key,@foodname_cn,@wait_time,@tips,@consider_time)";
                 foreach (OrderData ord in orders)
                 {
-                    cmd.CommandText = string.Format(findFormat, ord.customer, ord.food);
-                    int ret = cmd.ExecuteNonQuery();
-                    if(ret == 1)
+                    //cmd.CommandText = string.Format("SELECT * FROM orderfood WHERE customer_key={0},food_key={1}", ord.customer, ord.food);
+                    var findCmd = cnn.CreateCommand();
+                    findCmd.CommandText = string.Format("SELECT food_key " +
+                                                        "FROM orderfood " +
+                                                        "WHERE customer_key='{0}' AND food_key='{1}'", ord.customer, ord.food);
+                    var reader = findCmd.ExecuteReader();
+                    bool isExsit = reader.Read();
+                    reader.Close();
+                    findCmd.Dispose();
+
+                    var updateOrAddCmd = cnn.CreateCommand();
+                    if(isExsit)
                     {// 找到了
-                        cmd.CommandText = string.Format(updateFormat, ord.customer, ord.food);
+                        
+                        updateOrAddCmd.CommandText = string.Format("UPDATE orderfood " +
+                                                                   "SET customer_id=@customer_id,customer_key=@customer_key,Name_CN=@Name_CN,food_id=@food_id,food_key=@food_key,foodname_cn=@foodname_cn,wait_time=@wait_time,tips=@tips,consider_time=@consider_time " +
+                                                                   "WHERE customer_key='{0}' AND food_key='{1}'", ord.customer, ord.food);
                         MyDebug.WriteLine("Update Order");
                     }
                     else
                     {// 找不到
-                        cmd.CommandText = addCmd;
+                        updateOrAddCmd.CommandText = addCmd;
                         MyDebug.WriteLine("Create Order");
                     }
 
                     var cusInfo = CustomerDataManager.GetInstance().GetCustomer(ord.customer);
                     var foodInfo = FoodDataManager.GetInstance().GetFood(ord.food);
 
-                    cmd.Parameters.Add("customer_id", System.Data.DbType.Int32).Value = cusInfo.id;
-                    cmd.Parameters.Add("customer_key", System.Data.DbType.String).Value = cusInfo.key;
-                    cmd.Parameters.Add("Name_CN", System.Data.DbType.String).Value = cusInfo.display_name["cn"];
+                    updateOrAddCmd.Parameters.Add("customer_id", System.Data.DbType.Int32).Value = cusInfo.id;
+                    updateOrAddCmd.Parameters.Add("customer_key", System.Data.DbType.String).Value = cusInfo.key;
+                    updateOrAddCmd.Parameters.Add("Name_CN", System.Data.DbType.String).Value = cusInfo.display_name["cn"];
 
-                    cmd.Parameters.Add("food_id", System.Data.DbType.Int32).Value = foodInfo.id;
-                    cmd.Parameters.Add("food_key", System.Data.DbType.String).Value = foodInfo.key;
-                    cmd.Parameters.Add("foodname_cn", System.Data.DbType.String).Value = foodInfo.display_name["cn"];
+                    updateOrAddCmd.Parameters.Add("food_id", System.Data.DbType.Int32).Value = foodInfo.id;
+                    updateOrAddCmd.Parameters.Add("food_key", System.Data.DbType.String).Value = foodInfo.key;
+                    updateOrAddCmd.Parameters.Add("foodname_cn", System.Data.DbType.String).Value = foodInfo.display_name["cn"];
 
-                    cmd.Parameters.Add("wait_time", System.Data.DbType.Double).Value = ord.wait_time;
-                    cmd.Parameters.Add("tips", System.Data.DbType.Int32).Value = ord.tip;
-                    cmd.Parameters.Add("consider_time", System.Data.DbType.Double).Value = ord.consider_time;
+                    updateOrAddCmd.Parameters.Add("wait_time", System.Data.DbType.Double).Value = ord.wait_time;
+                    updateOrAddCmd.Parameters.Add("tips", System.Data.DbType.Int32).Value = ord.tip;
+                    updateOrAddCmd.Parameters.Add("consider_time", System.Data.DbType.Double).Value = ord.consider_time;
 
                     try
                     {
-                        ret = cmd.ExecuteNonQuery();
-                        MyDebug.WriteLine("Update Order result : " + ret);
+                        int updateOrAddResult = updateOrAddCmd.ExecuteNonQuery();
+                        MyDebug.WriteLine("Update Order result : " + updateOrAddResult);
                     }
                     catch (Exception e)
                     {
                         MyDebug.WriteLine(e);
                     }
+                    updateOrAddCmd.Dispose();
                 }
             }
 
