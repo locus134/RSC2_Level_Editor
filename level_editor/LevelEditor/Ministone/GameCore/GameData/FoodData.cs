@@ -22,6 +22,7 @@ namespace Ministone.GameCore.GameData
         int m_price;                                  // 食物价格
         int m_cookwareType;                           // 最终烹饪所使用的厨具类型
         float m_cookTime;                             // 食物制作时间
+        int m_shapeIndex;                             // 形状
         float m_burnTime;                             // 食物烧焦时间
         string m_foodKey;                             // 食物名称键值
         string m_texture;                             // 食物的显示纹理
@@ -36,6 +37,8 @@ namespace Ministone.GameCore.GameData
             m_finalIngredients = new List<string>();
             m_allIngredientSet = new HashSet<string>();
             m_cookingStepList = new List<CookingStep>();
+            m_cookwareType = 0;
+            m_shapeIndex = -1;
         }
 
         public int id
@@ -66,6 +69,12 @@ namespace Ministone.GameCore.GameData
         {
             get { return m_cookwareType; }
             set { m_cookwareType = value; }
+        }
+
+        public int shapeIndex
+        {
+            get { return m_shapeIndex; }
+            set { m_shapeIndex = value; }
         }
 
         public float cook_time

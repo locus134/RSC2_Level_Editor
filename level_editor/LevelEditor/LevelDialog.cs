@@ -168,9 +168,8 @@ namespace LevelEditor
             text_waitdecay_interval.Text = "0";
             text_waitdecay_rate.Text = "0";
             text_waitdecay_limit.Text = "0";
-            text_burndecay_interval.Text = "0";
-            text_burndecay_rate.Text = "0";
-            text_burndecay_limit.Text = "0";
+            text_rainInterval_start.Text = "0";
+            text_rainInterval_end.Text = "0";
             text_orderdecay_interval.Text = "0";
             text_orderdecay_rate.Text = "0";
             text_orderdecay_limit.Text = "0";
@@ -216,9 +215,8 @@ namespace LevelEditor
             text_waitdecay_interval.Text = m_curLevelData.waiting_decay.interval.ToString();
             text_waitdecay_rate.Text = m_curLevelData.waiting_decay.rate.ToString();
             text_waitdecay_limit.Text = m_curLevelData.waiting_decay.limit.ToString();
-            text_burndecay_interval.Text = m_curLevelData.burn_decay.interval.ToString();
-            text_burndecay_rate.Text = m_curLevelData.burn_decay.rate.ToString();
-            text_burndecay_limit.Text = m_curLevelData.burn_decay.limit.ToString();
+            text_rainInterval_start.Text = m_curLevelData.rain_interval.min.ToString();
+            text_rainInterval_end.Text = m_curLevelData.rain_interval.max.ToString();
             text_orderdecay_interval.Text = m_curLevelData.order_decay.interval.ToString();
             text_orderdecay_rate.Text = m_curLevelData.order_decay.rate.ToString();
             text_orderdecay_limit.Text = m_curLevelData.order_decay.limit.ToString();
@@ -415,15 +413,6 @@ namespace LevelEditor
             }
             levelData.waiting_decay = new DecayData(decay_intv, decay_rate, decay_limit);
 
-            if (!float.TryParse(text_burndecay_interval.Text, out decay_intv)
-                || !float.TryParse(text_burndecay_rate.Text, out decay_rate)
-                || !float.TryParse(text_burndecay_limit.Text, out decay_limit))
-            {
-                errMsg = "请输入正确的烧焦时间衰减配置";
-                goto err_return;
-            }
-            levelData.burn_decay = new DecayData(decay_intv, decay_rate, decay_limit);
-
             if (!float.TryParse(text_orderdecay_interval.Text, out decay_intv)
                 || !float.TryParse(text_orderdecay_rate.Text, out decay_rate)
                 || !float.TryParse(text_orderdecay_limit.Text, out decay_limit))
@@ -443,6 +432,14 @@ namespace LevelEditor
             levelData.cooking_decay = new DecayData(decay_intv, decay_rate, decay_limit);
 
             int min, max;
+            if (!int.TryParse(text_rainInterval_start.Text, out min)
+                || !int.TryParse(text_rainInterval_end.Text, out max))
+            {
+                errMsg = "请输入正确的下雨时间间隔";
+                goto err_return;
+            }
+            levelData.rain_interval = new RangeData<int>(min, max);
+
             if (!int.TryParse(text_litterinterval_start.Text, out min)
                 || !int.TryParse(text_litterinterval_end.Text, out max))
             {
@@ -496,8 +493,6 @@ namespace LevelEditor
             //    levelData.comments = text_level_comments.Buffer.Text;
             //}
 
-            List<CustomerOrder> orders = new List<CustomerOrder>();
-            List<CustomerOrder> guideOrders = new List<CustomerOrder>();
             TreeIter iter;
             if (m_orderListStore.GetIterFirst(out iter))
             {
@@ -507,7 +502,7 @@ namespace LevelEditor
                     ord.weight = float.Parse((string)m_orderListStore.GetValue(iter, (int)OrderSeq.weiget));
                     ord.interval.min = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.minInterval);
                     ord.interval.max = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.maxInterval);
-                    ord.randomFoodStep = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.randomFood);
+                    ord.randomFoodRule = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.randomFood);
                     ord.latestFirstCome = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.lastestCome);
                     bool isGuide = (bool)m_orderListStore.GetValue(iter, (int)OrderSeq.guide);
                     ord.customer = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.customerKey);
@@ -515,16 +510,22 @@ namespace LevelEditor
 
                     if (isGuide)
                     {
-                        guideOrders.Add(ord);
+                        levelData.guide_orders.Add(ord);
                     }
-                    else
+                    else if(ord.weight > 0)
                     {
-                        orders.Add(ord);
+                        levelData.orders.Add(ord);
+                    }
+                    else if(ord.interval.min > 0 && ord.interval.max > 0)
+                    {
+                        if(ord.randomFoodRule != "none")
+                        {
+                            levelData.anyfoodOrders.Add(ord);
+                        }else {
+                            levelData.specialOrders.Add(ord);
+                        }
                     }
                 } while (m_orderListStore.IterNext(ref iter));
-
-                levelData.orders = orders;
-                levelData.guide_orders = guideOrders;
             }
 
             m_curLevelData = levelData;
@@ -608,7 +609,7 @@ namespace LevelEditor
                     }
                 }
 
-                m_orderListStore.AppendValues(custIcon, foodIcon, ord.weight.ToString(), ord.interval.min, ord.interval.max, ord.randomFoodStep, ord.latestFirstCome, isGuide, ord.customer, ord.foods);
+                m_orderListStore.AppendValues(custIcon, foodIcon, ord.weight.ToString(), ord.interval.min, ord.interval.max, ord.randomFoodRule, ord.latestFirstCome, isGuide, ord.customer, ord.foods);
             }
         }
 
@@ -642,13 +643,18 @@ namespace LevelEditor
             if (m_orderListStore.GetIterFromString(out iter, args.Path))
             {
                 float weight;
-                if (Utils.ParseFloat(args.NewText, out weight, this) && weight >= 0.01f)
+                if (Utils.ParseFloat(args.NewText, out weight, this))
                 {
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, weight.ToString());
+                    if(weight > 0)
+                    {
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, weight.ToString());
 
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, 0);
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.maxInterval, 0);
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, "none");
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, 0);
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.maxInterval, 0);
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, "none"); 
+                    }else{
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, weight.ToString());
+                    }
                 }
             }
         }
@@ -712,6 +718,7 @@ namespace LevelEditor
 
                 if (rule == "only2" || rule == "only3" || rule == "more2" || rule == "more3" )
                 {
+                    
                     m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, "0");
                     m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, rule);
                 }
@@ -894,7 +901,7 @@ namespace LevelEditor
             int interval_max1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.maxInterval);
             string randomFood1 = (string)m_orderListStore.GetValue(iter1, (int)OrderSeq.randomFood); 
             int lc1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.lastestCome);
-            bool guide1 = (bool)m_orderListStore.GetValue(iter1, (int)OrderSeq.lastestCome);
+            bool guide1 = (bool)m_orderListStore.GetValue(iter1, (int)OrderSeq.guide);
             string customer1 = (string)m_orderListStore.GetValue(iter1, (int)OrderSeq.customerKey);
             List<string> foods1 = (List<string>)m_orderListStore.GetValue(iter1, (int)OrderSeq.foods);
 
@@ -905,7 +912,7 @@ namespace LevelEditor
             int interval_max2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.maxInterval);
             string randomFood2 = (string)m_orderListStore.GetValue(iter2, (int)OrderSeq.randomFood); 
             int lc2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.lastestCome);
-            bool guide2 = (bool)m_orderListStore.GetValue(iter2, (int)OrderSeq.lastestCome);
+            bool guide2 = (bool)m_orderListStore.GetValue(iter2, (int)OrderSeq.guide);
             string customer2 = (string)m_orderListStore.GetValue(iter2, (int)OrderSeq.customerKey);
             List<string> foods2 = (List<string>)m_orderListStore.GetValue(iter2, (int)OrderSeq.foods);
 
@@ -991,7 +998,14 @@ namespace LevelEditor
                     m_allLevelData.Add(m_curLevelData);
                 }
                 _lvlMgr.SetMapLevelDatas(m_curRestData.key, m_allLevelData);
-                string jsonStr = _lvlMgr.GetJsonString(m_curRestData.key);
+                try{
+                    _lvlMgr.saveLevelData(m_curLevelData);
+                }catch(Exception err)
+                {
+                    Console.WriteLine("Save LevelData Error:" + err.ToString());
+                }
+
+                //string jsonStr = _lvlMgr.GetJsonString(m_curRestData.key);
                 //string path = m_levelFileDir + m_curRestData.key + ".json";
                 //File.WriteAllText(path, jsonStr);
 
@@ -1041,6 +1055,7 @@ namespace LevelEditor
             if (dlg.Run() == (int)ResponseType.Ok)
             {
                 selectedCustomers = dlg.SecretCustomers;
+                m_curLevelData.secret_customers = selectedCustomers;
                 if (selectedCustomers != null && selectedCustomers.Count > 0)
                 {
                     string text = "";
@@ -1289,16 +1304,16 @@ namespace LevelEditor
                 autoGenConfig.waitDecay.rate = decay_rate;
                 autoGenConfig.waitDecay.limit = decay_limit;
 
-                if (!float.TryParse(text_burndecay_interval.Text, out decay_intv)
-                    || !float.TryParse(text_burndecay_rate.Text, out decay_rate)
-                    || !float.TryParse(text_burndecay_limit.Text, out decay_limit))
-                {
-                    errMsg = "请输入正确的烧焦时间衰减配置";
-                    break;
-                }
-                autoGenConfig.burnDecay.interval = decay_intv;
-                autoGenConfig.burnDecay.rate = decay_rate;
-                autoGenConfig.burnDecay.limit = decay_limit;
+                //if (!float.TryParse(text_burndecay_interval.Text, out decay_intv)
+                //    || !float.TryParse(text_burndecay_rate.Text, out decay_rate)
+                //    || !float.TryParse(text_burndecay_limit.Text, out decay_limit))
+                //{
+                //    errMsg = "请输入正确的烧焦时间衰减配置";
+                //    break;
+                //}
+                //autoGenConfig.burnDecay.interval = decay_intv;
+                //autoGenConfig.burnDecay.rate = decay_rate;
+                //autoGenConfig.burnDecay.limit = decay_limit;
 
                 if (!float.TryParse(text_orderdecay_interval.Text, out decay_intv)
                     || !float.TryParse(text_orderdecay_rate.Text, out decay_rate)

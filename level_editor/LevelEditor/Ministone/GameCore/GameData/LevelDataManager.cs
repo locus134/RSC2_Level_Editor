@@ -195,21 +195,6 @@ namespace Ministone.GameCore.GameData
             sqlCnn.Close();
             sqlCnn.Dispose();
 
-            //Console.WriteLine(mapData.key + ":");
-            //StringBuilder foods = new StringBuilder();
-            //foreach(string food in m_foods)
-            //{
-            //    foods.Append(food).Append(";");
-            //}
-            //Console.WriteLine("Foods:" + foods);
-
-            //StringBuilder customers = new StringBuilder();
-            //foreach (string customer in m_customers)
-            //{
-            //    customers.Append(customer).Append(";");
-            //}
-            //Console.WriteLine("Customers:" + customers);
-
             SetMapLevelDatas(mapKey, levels);
 
             return true;
@@ -352,7 +337,7 @@ namespace Ministone.GameCore.GameData
                     order.interval.max = interval[1].ToInt32();
 
                     int lastIdx = sourceStr.LastIndexOf(',');
-                    order.randomFoodStep = sourceStr.Substring(index + 2, lastIdx - index - 2);
+                    order.randomFoodRule = sourceStr.Substring(index + 2, lastIdx - index - 2);
 
                     string customerName = sourceStr.Substring(lastIdx + 1, sourceStr.Length - lastIdx - 1);
                     order.customer = customerName;
@@ -364,6 +349,43 @@ namespace Ministone.GameCore.GameData
                 }
             }
             return orderList;
+        }
+
+        public string exportOrders(List<CustomerOrder> orders)
+        {
+            StringBuilder orderStr = new StringBuilder();
+            foreach(CustomerOrder ord in orders)
+            {
+                string foodKey = ord.foods.Count > 1 ? string.Format("{0}&{1}",ord.foods[0], ord.foods[1]) : ord.foods[0];
+                orderStr.Append("(").Append(foodKey).Append(",").Append(ord.customer).Append(",").Append(ord.weight);
+                if(ord.latestFirstCome > 0)
+                {
+                    orderStr.Append(",").Append(ord.latestFirstCome);
+                }
+                orderStr.Append(");");
+            }
+            return orders.ToString();
+        }
+
+        public string exportSpecialOrders(List<CustomerOrder> orders)
+        {
+            StringBuilder orderStr = new StringBuilder();
+            foreach (CustomerOrder ord in orders)
+            {
+                string foodKey = ord.foods.Count > 1 ? string.Format("{0}&{1}", ord.foods[0], ord.foods[1]) : ord.foods[0];
+                orderStr.Append("([").Append(ord.interval.min).Append(",").Append(ord.interval.max).Append("],").Append(foodKey).Append(",").Append(ord.customer).Append(");");
+            }
+            return orders.ToString();
+        }
+
+        public string exportRandomfoodOrders(List<CustomerOrder> orders)
+        {
+            StringBuilder orderStr = new StringBuilder();
+            foreach (CustomerOrder ord in orders)
+            {
+                orderStr.Append("([").Append(ord.interval.min).Append(",").Append(ord.interval.max).Append("],").Append(ord.randomFoodRule).Append(",").Append(ord.customer).Append(");");
+            }
+            return orders.ToString();
         }
 
         public string GetJsonString(string restaurant)
@@ -398,6 +420,163 @@ namespace Ministone.GameCore.GameData
             }
             m_levelIndexes.Add(restaurant, indexDict);
         }
+
+        public void saveLevelData(LevelData lvData)
+        {
+            SQLiteConnection cnn = new SQLiteConnection("data source = " + m_dbPath);
+            cnn.Open();
+
+            var cmd = cnn.CreateCommand();
+            cmd.CommandText = string.Format("SELECT * FROM Level WHERE level={0}", lvData.id);
+            var reader = cmd.ExecuteReader();
+
+            string[] keys = "level,type,total,star_score,orders,special_orders,anyfood_orders,max_order,order_interval,first_arrival,waiting_time_decay,secret_customers,mucky_interval,broken_interval,rain_interval,requirement,organic_materials,unlock".Split(',');
+
+            string updateStr = "";
+            if(reader.Read())
+            {// 已存在，修改数值
+                StringBuilder cmdStr = new StringBuilder();
+                cmdStr.Append("UPDATE Level SET ");
+
+                var itor = keys.GetEnumerator();
+                while(true)
+                {
+                    bool result = itor.MoveNext();
+                    if(!result)
+                    {
+                        cmdStr.Remove(cmdStr.Length - 1, 1);
+                        break;
+                    }
+                    string key = (string)itor.Current;
+                    cmdStr.Append(key).Append("=@").Append(key).Append(",");
+                }
+
+                cmdStr.Append(" WHERE level=").Append(lvData.id);
+
+                updateStr = cmdStr.ToString();
+                MyDebug.WriteLine("Update cmdStr = " + updateStr);
+            }
+            else{
+                StringBuilder cmdStr = new StringBuilder();
+                cmdStr.Append("INSERT INTO Level(");
+
+                var itor = keys.GetEnumerator();
+                while (true)
+                {
+                    bool result = itor.MoveNext();
+                    if (!result)
+                    {
+                        cmdStr.Remove(cmdStr.Length - 1, 1);
+                        break;
+                    }
+                    string key = (string)itor.Current;
+                    cmdStr.Append(key).Append(",");
+                }
+
+                cmdStr.Append(") VALUES(");
+
+                itor = keys.GetEnumerator();
+                while (true)
+                {
+                    bool result = itor.MoveNext();
+                    if (!result)
+                    {
+                        cmdStr.Remove(cmdStr.Length - 1, 1);
+                        break;
+                    }
+                    string key = (string)itor.Current;
+                    cmdStr.Append("@").Append(key).Append(",");
+                }
+
+                cmdStr.Append(")");
+
+                updateStr = cmdStr.ToString();
+                MyDebug.WriteLine("Add cmdStr = " + updateStr);
+                //updateStr = "INSERT INTO Level(customer_id, customer_key, Name_CN, food_id, food_key, foodname_cn, wait_time, tips, consider_time) VALUES(@customer_id, @customer_key, @Name_CN, @food_id, @food_key, @foodname_cn, @wait_time, @tips, @consider_time)"
+            }
+            reader.Close();
+            cmd.Dispose();
+
+            cmd = cnn.CreateCommand();
+            cmd.CommandText = updateStr;
+            //"level,type,total,star_score,orders,special_orders,anyfood_orders,max_order,order_interval,first_arrival,waiting_time_decay," +
+            //"secret_customers,mucky_interval,broken_interval,rain_interval,requirement,organic_materials,required_kitchenware,unlock,rewards"
+            cmd.Parameters.Add("level", System.Data.DbType.Int32).Value = lvData.id;
+            cmd.Parameters.Add("type", System.Data.DbType.String).Value = (lvData.type == LevelType.FIXED_CUSTOMER ? "FIXED_CUSTOMER" : (lvData.type == LevelType.FIXED_TIME ? "FIXED_TIME" : "LOST_CUSTOMER"));
+            cmd.Parameters.Add("total", System.Data.DbType.Int32).Value = lvData.total;
+            cmd.Parameters.Add("star_score", System.Data.DbType.String).Value = ConvertList.List2String<string>(lvData.scoreList, ';');
+            cmd.Parameters.Add("orders", System.Data.DbType.String).Value = exportOrders(lvData.orders);
+            cmd.Parameters.Add("special_orders", System.Data.DbType.String).Value = exportOrders(lvData.specialOrders);
+            cmd.Parameters.Add("anyfood_orders", System.Data.DbType.String).Value = exportOrders(lvData.anyfoodOrders);
+            cmd.Parameters.Add("max_order", System.Data.DbType.Int32).Value = lvData.max_order;
+            cmd.Parameters.Add("order_interval", System.Data.DbType.String).Value = string.Format("{0},{1}", lvData.order_interval.min, lvData.order_interval.max);
+            cmd.Parameters.Add("first_arrival", System.Data.DbType.String).Value = ConvertList.List2String<float>(lvData.first_arrivals, ',');
+            cmd.Parameters.Add("waiting_time_decay", System.Data.DbType.String).Value = string.Format("{0},{1}", lvData.waiting_decay.interval, lvData.waiting_decay.rate);
+            string secretStr = "";
+            var it = lvData.secret_customers.GetEnumerator();
+            bool hasNext = it.MoveNext();
+            while (hasNext)
+            {
+                SecretCustomer secCus = it.Current;
+                secretStr += secCus.customer;
+                if (secCus.showOrder > 0)
+                {
+                    secretStr += string.Format("<{0}>", secCus.showOrder);
+                }
+                hasNext = it.MoveNext();
+                if (hasNext)
+                {
+                    secretStr += ";";
+                }
+            }
+            cmd.Parameters.Add("secret_customers", System.Data.DbType.String).Value = secretStr;
+            cmd.Parameters.Add("mucky_interval", System.Data.DbType.String).Value = string.Format("{0},{1}", lvData.litter_interval.min, lvData.litter_interval.max);
+            cmd.Parameters.Add("broken_interval", System.Data.DbType.String).Value = string.Format("{0},{1}", lvData.broken_interval.min, lvData.broken_interval.max);
+            cmd.Parameters.Add("rain_interval", System.Data.DbType.String).Value = string.Format("{0},{1}", lvData.rain_interval.min, lvData.rain_interval.max);
+            string requireStr = "";
+            if (lvData.requirements.requiredCustomers.Count > 0)
+            {
+                foreach (var req in lvData.requirements.requiredCustomers)
+                {
+                    requireStr += string.Format("{0}*{1};", req.name, req.number);
+                }
+            }
+            else if (lvData.requirements.requiredFoods.Count > 0)
+            {
+                foreach (var req in lvData.requirements.requiredFoods)
+                {
+                    requireStr += string.Format("{0}*{1};", req.name, req.number);
+                }
+            }
+            else if (!lvData.requirements.allowBurn)
+            {
+                requireStr += "no_burn;";
+            }
+            else if (!lvData.requirements.allowLostCustomer)
+            {
+                requireStr += "no_lost;";
+            }
+            else if (lvData.requirements.smileCount > 0)
+            {
+                requireStr += "smile*" + lvData.requirements.smileCount + ";";
+            }
+            if (requireStr.Length > 0)
+            {
+                requireStr = requireStr.Substring(0, requireStr.Length - 1);
+            }
+            cmd.Parameters.Add("secret_customers", System.Data.DbType.String).Value = requireStr;
+            cmd.Parameters.Add("organic_materials", System.Data.DbType.String).Value = ConvertList.List2String<string>(lvData.organicMaterials, ';');
+            cmd.Parameters.Add("unlock", System.Data.DbType.Int32).Value = ConvertList.List2String<int>(lvData.unlock_items, ';');
+
+            try{
+                int updateRlt = cmd.ExecuteNonQuery();
+                MyDebug.WriteLine("Update levelData result : ", updateRlt);
+            }catch(Exception e)
+            {
+                MyDebug.WriteLine(e);
+            }
+        }
+
 
         public LevelData GetLevelData(string restaurant, int levelId)
         {

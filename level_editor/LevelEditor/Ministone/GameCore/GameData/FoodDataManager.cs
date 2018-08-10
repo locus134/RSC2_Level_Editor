@@ -72,7 +72,18 @@ namespace Ministone.GameCore.GameData
                 foodData.price = reader.GetInt32Safe(column++);
                 foodData.cook_time = reader.GetFloatSafe(column++);
                 foodData.burn_time = reader.GetFloatSafe(column++);
-                foodData.cookware_type = reader.GetInt32Safe(column++);
+                string cwTypeStr = reader.GetStringSafe(column++);
+                if(cwTypeStr.Contains(":"))
+                {
+                    int pos = cwTypeStr.IndexOf(':');
+                    foodData.cookware_type = cwTypeStr.Substring(0, pos).ToInt32();
+                    foodData.shapeIndex = cwTypeStr.Substring(pos + 1, cwTypeStr.Length - pos - 1).ToInt32();
+                }else{
+                    if(cwTypeStr.Length > 0)
+                    {
+                        foodData.cookware_type = cwTypeStr.ToInt32(); 
+                    }
+                }
                 string ingredients = reader.GetStringSafe(column++);
                 if(ingredients.Length > 0)
                 {

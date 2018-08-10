@@ -53,7 +53,7 @@ namespace Ministone.GameCore.GameData
         public string customer;                     // 顾客名称
         public List<string> foods = new List<string>();                  // 所点的食物列表
         public RangeData<int> interval = new RangeData<int>(0, 0);             // 出现的间隔
-        public string randomFoodStep = "none";
+        public string randomFoodRule = "none";
     }
 
     public class FailTipData
