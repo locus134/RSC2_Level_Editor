@@ -103,7 +103,7 @@ namespace LevelEditor
             TreeIter iter;
             if (m_secretStore.GetIterFromString(out iter, args.Path))
             {
-                m_secretStore.SetValue(iter, 2, num.ToString());
+                m_secretStore.SetValue(iter, 2, num);
             }
         }
 
