@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Gtk;
 using Ministone.GameCore.GameData;
-using Ministone.GameCore.GameData.Generic;
 
 namespace LevelEditor
 {
@@ -27,19 +27,16 @@ namespace LevelEditor
             m_lastSmileCount = curReq.smileCount.ToString();
             entry_smile_count.Text = m_lastSmileCount;
 
-            string requireStr = "";
-            foreach (var req in curReq.requiredCustomers)
+            string jsonStr = JsonConvert.SerializeObject(curReq.requiredCustomers);
+            if (!string.IsNullOrEmpty(jsonStr))
             {
-                requireStr += string.Format("{0}*{1};", req.name, req.number);
+                entry_required_customers.Text = jsonStr;
             }
-            entry_required_customers.Text = requireStr;
-
-            requireStr = "";
-            foreach (var req in curReq.requiredFoods)
+            jsonStr = JsonConvert.SerializeObject(curReq.requiredFoods);
+            if (!string.IsNullOrEmpty(jsonStr))
             {
-                requireStr += string.Format("{0}*{1};", req.name, req.number);
+                entry_required_foods.Text = jsonStr;
             }
-            entry_required_foods.Text = requireStr;
         }
 
         public Requirements Requirements
@@ -49,73 +46,32 @@ namespace LevelEditor
 
         protected void OnButtonEditCustomersClicked(object sender, EventArgs e)
         {
-            List<Requirements.NameAndNumber> reqCustomers = new List<Requirements.NameAndNumber>();
-            string txtRequire = entry_required_customers.Text;
-            if (!string.IsNullOrEmpty(txtRequire))
-            {
-                if (txtRequire.Contains("*"))
-                {
-                    string[] requireFoods = txtRequire.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string require in requireFoods)
-                    {
-                        int pos = require.IndexOf('*');
-                        string food = require.Substring(0, pos);
-                        int number = require.Substring(pos + 1, require.Length - pos - 1).ToInt32();
-                        var nn = new Requirements.NameAndNumber(food, number);
-                        reqCustomers.Add(nn);
-                    }
-                }
-            }
+            List<Requirements.NameAndNumber> reqCustomers = JsonConvert.DeserializeObject<List<Requirements.NameAndNumber>>(entry_required_customers.Text);
 
             CustomerRequirementDialog dlg = new CustomerRequirementDialog(this, m_customerList, reqCustomers);
             if (dlg.Run() == (int)ResponseType.Ok)
             {
-                txtRequire = "";
                 List<Requirements.NameAndNumber> req = dlg.RequiredCustomers;
                 if (req != null)
                 {
-                    foreach (var requrie in req)
-                    {
-                        txtRequire += string.Format("{0}*{1};", requrie.name, requrie.number);
-                    }
+                    entry_required_customers.Text = JsonConvert.SerializeObject(req);
                 }
-                entry_required_customers.Text = txtRequire;
             }
             dlg.Destroy();
         }
 
         protected void OnButtonEditFoodsClicked(object sender, EventArgs e)
         {
-            List<Requirements.NameAndNumber> reqFoods = new List<Requirements.NameAndNumber>();
-            string txtRequire = entry_required_foods.Text;
-            if (!string.IsNullOrEmpty(txtRequire))
-            {
-                if (txtRequire.Contains("*"))
-                {
-                    string[] requireFoods = txtRequire.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string require in requireFoods)
-                    {
-                        int pos = require.IndexOf('*');
-                        string food = require.Substring(0, pos);
-                        int number = require.Substring(pos + 1, require.Length - pos - 1).ToInt32();
-                        var nn = new Requirements.NameAndNumber(food, number);
-                        reqFoods.Add(nn);
-                    }
-                }
-            }
+            List<Requirements.NameAndNumber> reqFoods = JsonConvert.DeserializeObject<List<Requirements.NameAndNumber>>(entry_required_foods.Text);
+
             FoodRequirementDialog dlg = new FoodRequirementDialog(this, m_foodList, reqFoods);
             if (dlg.Run() == (int)ResponseType.Ok)
             {
-                txtRequire = "";
                 List<Requirements.NameAndNumber> req = dlg.RequiredFoods;
                 if (req != null)
                 {
-                    foreach (var requrie in req)
-                    {
-                        txtRequire += string.Format("{0}*{1};", requrie.name, requrie.number);
-                    }
+                    entry_required_foods.Text = JsonConvert.SerializeObject(req);
                 }
-                entry_required_foods.Text = txtRequire;
             }
             dlg.Destroy();
         }
@@ -129,34 +85,12 @@ namespace LevelEditor
             string jsonStr = entry_required_foods.Text;
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                if(jsonStr.Contains("*"))
-                {
-                    string[] requireFoods = jsonStr.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach(string reqFood in requireFoods)
-                    {
-                        int pos = reqFood.IndexOf('*');
-                        string food = reqFood.Substring(0, pos);
-                        int number = reqFood.Substring(pos + 1, reqFood.Length - pos - 1).ToInt32();
-                        var nn = new Requirements.NameAndNumber(food, number);
-                        m_requirements.requiredFoods.Add(nn);
-                    }
-                }
+                m_requirements.requiredFoods = JsonConvert.DeserializeObject<List<Requirements.NameAndNumber>>(jsonStr);
             }
             jsonStr = entry_required_customers.Text;
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                if (jsonStr.Contains("*"))
-                {
-                    string[] requireCustomers = jsonStr.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string reqCus in requireCustomers)
-                    {
-                        int pos = reqCus.IndexOf('*');
-                        string food = reqCus.Substring(0, pos);
-                        int number = reqCus.Substring(pos + 1, reqCus.Length - pos - 1).ToInt32();
-                        var nn = new Requirements.NameAndNumber(food, number);
-                        m_requirements.requiredCustomers.Add(nn);
-                    }
-                }
+                m_requirements.requiredCustomers = JsonConvert.DeserializeObject<List<Requirements.NameAndNumber>>(jsonStr);
             }
         }
 

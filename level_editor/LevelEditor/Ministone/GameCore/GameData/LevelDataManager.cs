@@ -130,7 +130,7 @@ namespace Ministone.GameCore.GameData
                     lvData.specialOrders = ParseSpecialOrders(getNextString());
                     string newfood = getNextString();
                     string guideOrders = getNextString();
-                    lvData.randomfoodOrders = ParseAnyfoodOrders(getNextString());
+                    lvData.anyfoodOrders = ParseAnyfoodOrders(getNextString());
                     lvData.max_order = getNextInt32();
                     string[] orderIntervals = getNextString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries); ;
                     lvData.order_interval.set(orderIntervals[0].ToFloat(), orderIntervals[1].ToFloat());
@@ -197,12 +197,6 @@ namespace Ministone.GameCore.GameData
 
             SetMapLevelDatas(mapKey, levels);
 
-            MyDebug.WriteLine("Map " + mapKey);
-            List<string> customerList = new List<string>(m_customers);
-            MyDebug.WriteLine("Customers :" + ConvertList.List2String<string>(customerList, ';'));
-            List<string> foodList = new List<string>(m_foods);
-            MyDebug.WriteLine("Foods     :" + ConvertList.List2String<string>(foodList, ';'));
-                   
             return true;
         }
 
@@ -370,7 +364,7 @@ namespace Ministone.GameCore.GameData
                 }
                 orderStr.Append(");");
             }
-            return orderStr.ToString();
+            return orders.ToString();
         }
 
         public string exportSpecialOrders(List<CustomerOrder> orders)
@@ -381,7 +375,7 @@ namespace Ministone.GameCore.GameData
                 string foodKey = ord.foods.Count > 1 ? string.Format("{0}&{1}", ord.foods[0], ord.foods[1]) : ord.foods[0];
                 orderStr.Append("([").Append(ord.interval.min).Append(",").Append(ord.interval.max).Append("],").Append(foodKey).Append(",").Append(ord.customer).Append(");");
             }
-            return orderStr.ToString();
+            return orders.ToString();
         }
 
         public string exportRandomfoodOrders(List<CustomerOrder> orders)
@@ -391,7 +385,7 @@ namespace Ministone.GameCore.GameData
             {
                 orderStr.Append("([").Append(ord.interval.min).Append(",").Append(ord.interval.max).Append("],").Append(ord.randomFoodRule).Append(",").Append(ord.customer).Append(");");
             }
-            return orderStr.ToString();
+            return orders.ToString();
         }
 
         public string GetJsonString(string restaurant)
@@ -437,7 +431,8 @@ namespace Ministone.GameCore.GameData
             var reader = cmd.ExecuteReader();
 
             string[] keys = "level,type,total,star_score,orders,special_orders,anyfood_orders,max_order,order_interval,first_arrival,waiting_time_decay,secret_customers,mucky_interval,broken_interval,rain_interval,requirement,organic_materials,unlock".Split(',');
-　            string updateStr = "";
+
+            string updateStr = "";
             if(reader.Read())
             {// 已存在，修改数值
                 StringBuilder cmdStr = new StringBuilder();
@@ -504,13 +499,15 @@ namespace Ministone.GameCore.GameData
 
             cmd = cnn.CreateCommand();
             cmd.CommandText = updateStr;
+            //"level,type,total,star_score,orders,special_orders,anyfood_orders,max_order,order_interval,first_arrival,waiting_time_decay," +
+            //"secret_customers,mucky_interval,broken_interval,rain_interval,requirement,organic_materials,required_kitchenware,unlock,rewards"
             cmd.Parameters.Add("level", System.Data.DbType.Int32).Value = lvData.id;
             cmd.Parameters.Add("type", System.Data.DbType.String).Value = (lvData.type == LevelType.FIXED_CUSTOMER ? "FIXED_CUSTOMER" : (lvData.type == LevelType.FIXED_TIME ? "FIXED_TIME" : "LOST_CUSTOMER"));
             cmd.Parameters.Add("total", System.Data.DbType.Int32).Value = lvData.total;
             cmd.Parameters.Add("star_score", System.Data.DbType.String).Value = ConvertList.List2String<string>(lvData.scoreList, ';');
             cmd.Parameters.Add("orders", System.Data.DbType.String).Value = exportOrders(lvData.orders);
-            cmd.Parameters.Add("special_orders", System.Data.DbType.String).Value = exportSpecialOrders(lvData.specialOrders);
-            cmd.Parameters.Add("anyfood_orders", System.Data.DbType.String).Value = exportRandomfoodOrders(lvData.randomfoodOrders);
+            cmd.Parameters.Add("special_orders", System.Data.DbType.String).Value = exportOrders(lvData.specialOrders);
+            cmd.Parameters.Add("anyfood_orders", System.Data.DbType.String).Value = exportOrders(lvData.anyfoodOrders);
             cmd.Parameters.Add("max_order", System.Data.DbType.Int32).Value = lvData.max_order;
             cmd.Parameters.Add("order_interval", System.Data.DbType.String).Value = string.Format("{0},{1}", lvData.order_interval.min, lvData.order_interval.max);
             cmd.Parameters.Add("first_arrival", System.Data.DbType.String).Value = ConvertList.List2String<float>(lvData.first_arrivals, ',');
@@ -544,22 +541,22 @@ namespace Ministone.GameCore.GameData
                     requireStr += string.Format("{0}*{1};", req.name, req.number);
                 }
             }
-            if (lvData.requirements.requiredFoods.Count > 0)
+            else if (lvData.requirements.requiredFoods.Count > 0)
             {
                 foreach (var req in lvData.requirements.requiredFoods)
                 {
                     requireStr += string.Format("{0}*{1};", req.name, req.number);
                 }
             }
-            if (!lvData.requirements.allowBurn)
+            else if (!lvData.requirements.allowBurn)
             {
                 requireStr += "no_burn;";
             }
-            if (!lvData.requirements.allowLostCustomer)
+            else if (!lvData.requirements.allowLostCustomer)
             {
                 requireStr += "no_lost;";
             }
-            if (lvData.requirements.smileCount > 0)
+            else if (lvData.requirements.smileCount > 0)
             {
                 requireStr += "smile*" + lvData.requirements.smileCount + ";";
             }
@@ -567,13 +564,17 @@ namespace Ministone.GameCore.GameData
             {
                 requireStr = requireStr.Substring(0, requireStr.Length - 1);
             }
-            cmd.Parameters.Add("requirement", System.Data.DbType.String).Value = requireStr;
-
+            cmd.Parameters.Add("secret_customers", System.Data.DbType.String).Value = requireStr;
             cmd.Parameters.Add("organic_materials", System.Data.DbType.String).Value = ConvertList.List2String<string>(lvData.organicMaterials, ';');
-            cmd.Parameters.Add("unlock", System.Data.DbType.String).Value = ConvertList.List2String<int>(lvData.unlock_items, ';');
+            cmd.Parameters.Add("unlock", System.Data.DbType.Int32).Value = ConvertList.List2String<int>(lvData.unlock_items, ';');
 
-            int updateRlt = cmd.ExecuteNonQuery();
-            MyDebug.WriteLine("Update levelData result : " + updateRlt);
+            try{
+                int updateRlt = cmd.ExecuteNonQuery();
+                MyDebug.WriteLine("Update levelData result : ", updateRlt);
+            }catch(Exception e)
+            {
+                MyDebug.WriteLine(e);
+            }
         }
 
 

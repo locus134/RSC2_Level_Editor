@@ -310,7 +310,7 @@ namespace LevelEditor
 
 		private global::Gtk.Button btn_remove_order;
 
-		private global::Gtk.HBox 明确食物订单;
+		private global::Gtk.HBox hbox1;
 
 		private global::Gtk.Frame frame22;
 
@@ -330,23 +330,83 @@ namespace LevelEditor
 
 		private global::Gtk.Button button_normalize_weight;
 
-		private global::Gtk.HBox 随机订单;
-
-		private global::Gtk.Frame frame1;
+		private global::Gtk.Frame frame2;
 
 		private global::Gtk.Alignment GtkAlignment8;
 
-		private global::Gtk.ScrolledWindow GtkScrolledWindow7;
+		private global::Gtk.ScrolledWindow GtkScrolledWindow6;
 
-		private global::Gtk.TreeView tree_randomOrder_list;
+		private global::Gtk.TreeView treeview4;
 
 		private global::Gtk.Label GtkLabel24;
 
 		private global::Gtk.VButtonBox vbuttonbox1;
 
-		private global::Gtk.Button btn_add_randomOrder;
+		private global::Gtk.Button button6226;
 
-		private global::Gtk.Button btn_delete_randomOrder;
+		private global::Gtk.Button button6227;
+
+		private global::Gtk.Frame frame_auto_gen;
+
+		private global::Gtk.Alignment GtkAlignment7;
+
+		private global::Gtk.VBox vbox31;
+
+		private global::Gtk.HBox hbox69;
+
+		private global::Gtk.Label label_diffculty;
+
+		private global::Gtk.ComboBox combobox_autogen_difficulty;
+
+		private global::Gtk.HBox hbox5;
+
+		private global::Gtk.Label label3;
+
+		private global::Gtk.Entry text_autogen_food_list;
+
+		private global::Gtk.Button button_edit_autogen_food_list;
+
+		private global::Gtk.HBox hbox7;
+
+		private global::Gtk.Label label4;
+
+		private global::Gtk.Entry text_auto_customer_list;
+
+		private global::Gtk.Button button_edit_autogen_customer_list;
+
+		private global::Gtk.HBox hbox71;
+
+		private global::Gtk.Label label48;
+
+		private global::Gtk.Entry text_autogen_specialnum;
+
+		private global::Gtk.Frame frame_auto_requirements;
+
+		private global::Gtk.Alignment GtkAlignment1;
+
+		private global::Gtk.VBox vbox6;
+
+		private global::Gtk.HBox hbox75;
+
+		private global::Gtk.CheckButton check_autogen_random_customer;
+
+		private global::Gtk.CheckButton check_autogen_random_food;
+
+		private global::Gtk.HBox hbox9;
+
+		private global::Gtk.CheckButton check_autogen_random_smile;
+
+		private global::Gtk.CheckButton check_autogen_any_customer;
+
+		private global::Gtk.Label GtkLabel22;
+
+		private global::Gtk.VButtonBox vbuttonbox7;
+
+		private global::Gtk.Button btn_autogen_generate;
+
+		private global::Gtk.Button button_autogen_requirements;
+
+		private global::Gtk.Label label_auto_gen1;
 
 		private global::Gtk.Label Label_Available_Orders;
 
@@ -403,7 +463,6 @@ namespace LevelEditor
 			this.text_level_id.CanFocus = true;
 			this.text_level_id.Name = "text_level_id";
 			this.text_level_id.IsEditable = true;
-			this.text_level_id.InvisibleChar = '●';
 			this.hbox19.Add(this.text_level_id);
 			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox19[this.text_level_id]));
 			w4.Position = 2;
@@ -526,7 +585,6 @@ namespace LevelEditor
 			this.text_config_total.CanFocus = true;
 			this.text_config_total.Name = "text_config_total";
 			this.text_config_total.IsEditable = true;
-			this.text_config_total.InvisibleChar = '●';
 			this.hbox29.Add(this.text_config_total);
 			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hbox29[this.text_config_total]));
 			w14.Position = 3;
@@ -545,7 +603,6 @@ namespace LevelEditor
 			this.text_config_score.CanFocus = true;
 			this.text_config_score.Name = "text_config_score";
 			this.text_config_score.IsEditable = true;
-			this.text_config_score.InvisibleChar = '●';
 			this.hbox29.Add(this.text_config_score);
 			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.hbox29[this.text_config_score]));
 			w16.Position = 5;
@@ -573,7 +630,6 @@ namespace LevelEditor
 			this.text_config_max_order.CanFocus = true;
 			this.text_config_max_order.Name = "text_config_max_order";
 			this.text_config_max_order.IsEditable = true;
-			this.text_config_max_order.InvisibleChar = '●';
 			this.hbox34.Add(this.text_config_max_order);
 			global::Gtk.Box.BoxChild w19 = ((global::Gtk.Box.BoxChild)(this.hbox34[this.text_config_max_order]));
 			w19.Position = 1;
@@ -592,7 +648,6 @@ namespace LevelEditor
 			this.text_config_full_patience.CanFocus = true;
 			this.text_config_full_patience.Name = "text_config_full_patience";
 			this.text_config_full_patience.IsEditable = true;
-			this.text_config_full_patience.InvisibleChar = '●';
 			this.hbox34.Add(this.text_config_full_patience);
 			global::Gtk.Box.BoxChild w21 = ((global::Gtk.Box.BoxChild)(this.hbox34[this.text_config_full_patience]));
 			w21.Position = 3;
@@ -620,7 +675,6 @@ namespace LevelEditor
 			this.text_config_order_interval_start.CanFocus = true;
 			this.text_config_order_interval_start.Name = "text_config_order_interval_start";
 			this.text_config_order_interval_start.IsEditable = true;
-			this.text_config_order_interval_start.InvisibleChar = '●';
 			this.hbox36.Add(this.text_config_order_interval_start);
 			global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.hbox36[this.text_config_order_interval_start]));
 			w24.Position = 1;
@@ -639,7 +693,6 @@ namespace LevelEditor
 			this.text_config_order_interval_end.CanFocus = true;
 			this.text_config_order_interval_end.Name = "text_config_order_interval_end";
 			this.text_config_order_interval_end.IsEditable = true;
-			this.text_config_order_interval_end.InvisibleChar = '●';
 			this.hbox36.Add(this.text_config_order_interval_end);
 			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.hbox36[this.text_config_order_interval_end]));
 			w26.Position = 3;
@@ -673,7 +726,6 @@ namespace LevelEditor
 			this.text_config_first_arrivals.Name = "text_config_first_arrivals";
 			this.text_config_first_arrivals.Text = global::Mono.Unix.Catalog.GetString("(逗号隔开，如2,5,8,11)");
 			this.text_config_first_arrivals.IsEditable = true;
-			this.text_config_first_arrivals.InvisibleChar = '●';
 			this.hbox36.Add(this.text_config_first_arrivals);
 			global::Gtk.Box.BoxChild w30 = ((global::Gtk.Box.BoxChild)(this.hbox36[this.text_config_first_arrivals]));
 			w30.Position = 6;
@@ -742,7 +794,6 @@ namespace LevelEditor
 			this.text_waitdecay_interval.CanFocus = true;
 			this.text_waitdecay_interval.Name = "text_waitdecay_interval";
 			this.text_waitdecay_interval.IsEditable = true;
-			this.text_waitdecay_interval.InvisibleChar = '●';
 			this.hbox41.Add(this.text_waitdecay_interval);
 			global::Gtk.Box.BoxChild w38 = ((global::Gtk.Box.BoxChild)(this.hbox41[this.text_waitdecay_interval]));
 			w38.Position = 2;
@@ -761,7 +812,6 @@ namespace LevelEditor
 			this.text_waitdecay_rate.CanFocus = true;
 			this.text_waitdecay_rate.Name = "text_waitdecay_rate";
 			this.text_waitdecay_rate.IsEditable = true;
-			this.text_waitdecay_rate.InvisibleChar = '●';
 			this.hbox41.Add(this.text_waitdecay_rate);
 			global::Gtk.Box.BoxChild w40 = ((global::Gtk.Box.BoxChild)(this.hbox41[this.text_waitdecay_rate]));
 			w40.Position = 4;
@@ -780,7 +830,6 @@ namespace LevelEditor
 			this.text_waitdecay_limit.CanFocus = true;
 			this.text_waitdecay_limit.Name = "text_waitdecay_limit";
 			this.text_waitdecay_limit.IsEditable = true;
-			this.text_waitdecay_limit.InvisibleChar = '●';
 			this.hbox41.Add(this.text_waitdecay_limit);
 			global::Gtk.Box.BoxChild w42 = ((global::Gtk.Box.BoxChild)(this.hbox41[this.text_waitdecay_limit]));
 			w42.Position = 6;
@@ -817,7 +866,6 @@ namespace LevelEditor
 			this.text_orderdecay_interval.CanFocus = true;
 			this.text_orderdecay_interval.Name = "text_orderdecay_interval";
 			this.text_orderdecay_interval.IsEditable = true;
-			this.text_orderdecay_interval.InvisibleChar = '●';
 			this.hbox45.Add(this.text_orderdecay_interval);
 			global::Gtk.Box.BoxChild w46 = ((global::Gtk.Box.BoxChild)(this.hbox45[this.text_orderdecay_interval]));
 			w46.Position = 2;
@@ -836,7 +884,6 @@ namespace LevelEditor
 			this.text_orderdecay_rate.CanFocus = true;
 			this.text_orderdecay_rate.Name = "text_orderdecay_rate";
 			this.text_orderdecay_rate.IsEditable = true;
-			this.text_orderdecay_rate.InvisibleChar = '●';
 			this.hbox45.Add(this.text_orderdecay_rate);
 			global::Gtk.Box.BoxChild w48 = ((global::Gtk.Box.BoxChild)(this.hbox45[this.text_orderdecay_rate]));
 			w48.Position = 4;
@@ -855,7 +902,6 @@ namespace LevelEditor
 			this.text_orderdecay_limit.CanFocus = true;
 			this.text_orderdecay_limit.Name = "text_orderdecay_limit";
 			this.text_orderdecay_limit.IsEditable = true;
-			this.text_orderdecay_limit.InvisibleChar = '●';
 			this.hbox45.Add(this.text_orderdecay_limit);
 			global::Gtk.Box.BoxChild w50 = ((global::Gtk.Box.BoxChild)(this.hbox45[this.text_orderdecay_limit]));
 			w50.Position = 6;
@@ -892,7 +938,6 @@ namespace LevelEditor
 			this.text_cookingdecay_interval.CanFocus = true;
 			this.text_cookingdecay_interval.Name = "text_cookingdecay_interval";
 			this.text_cookingdecay_interval.IsEditable = true;
-			this.text_cookingdecay_interval.InvisibleChar = '●';
 			this.hbox49.Add(this.text_cookingdecay_interval);
 			global::Gtk.Box.BoxChild w54 = ((global::Gtk.Box.BoxChild)(this.hbox49[this.text_cookingdecay_interval]));
 			w54.Position = 2;
@@ -911,7 +956,6 @@ namespace LevelEditor
 			this.text_cookingdecay_rate.CanFocus = true;
 			this.text_cookingdecay_rate.Name = "text_cookingdecay_rate";
 			this.text_cookingdecay_rate.IsEditable = true;
-			this.text_cookingdecay_rate.InvisibleChar = '●';
 			this.hbox49.Add(this.text_cookingdecay_rate);
 			global::Gtk.Box.BoxChild w56 = ((global::Gtk.Box.BoxChild)(this.hbox49[this.text_cookingdecay_rate]));
 			w56.Position = 4;
@@ -930,7 +974,6 @@ namespace LevelEditor
 			this.text_cookingdecay_limit.CanFocus = true;
 			this.text_cookingdecay_limit.Name = "text_cookingdecay_limit";
 			this.text_cookingdecay_limit.IsEditable = true;
-			this.text_cookingdecay_limit.InvisibleChar = '●';
 			this.hbox49.Add(this.text_cookingdecay_limit);
 			global::Gtk.Box.BoxChild w58 = ((global::Gtk.Box.BoxChild)(this.hbox49[this.text_cookingdecay_limit]));
 			w58.Position = 6;
@@ -979,7 +1022,6 @@ namespace LevelEditor
 			this.text_rainInterval_start.CanFocus = true;
 			this.text_rainInterval_start.Name = "text_rainInterval_start";
 			this.text_rainInterval_start.IsEditable = true;
-			this.text_rainInterval_start.InvisibleChar = '●';
 			this.hbox43.Add(this.text_rainInterval_start);
 			global::Gtk.Box.BoxChild w64 = ((global::Gtk.Box.BoxChild)(this.hbox43[this.text_rainInterval_start]));
 			w64.Position = 2;
@@ -998,7 +1040,6 @@ namespace LevelEditor
 			this.text_rainInterval_end.CanFocus = true;
 			this.text_rainInterval_end.Name = "text_rainInterval_end";
 			this.text_rainInterval_end.IsEditable = true;
-			this.text_rainInterval_end.InvisibleChar = '●';
 			this.hbox43.Add(this.text_rainInterval_end);
 			global::Gtk.Box.BoxChild w66 = ((global::Gtk.Box.BoxChild)(this.hbox43[this.text_rainInterval_end]));
 			w66.Position = 4;
@@ -1049,7 +1090,6 @@ namespace LevelEditor
 			this.text_litterinterval_start.CanFocus = true;
 			this.text_litterinterval_start.Name = "text_litterinterval_start";
 			this.text_litterinterval_start.IsEditable = true;
-			this.text_litterinterval_start.InvisibleChar = '●';
 			this.hbox47.Add(this.text_litterinterval_start);
 			global::Gtk.Box.BoxChild w72 = ((global::Gtk.Box.BoxChild)(this.hbox47[this.text_litterinterval_start]));
 			w72.Position = 2;
@@ -1068,7 +1108,6 @@ namespace LevelEditor
 			this.text_litterinterval_end.CanFocus = true;
 			this.text_litterinterval_end.Name = "text_litterinterval_end";
 			this.text_litterinterval_end.IsEditable = true;
-			this.text_litterinterval_end.InvisibleChar = '●';
 			this.hbox47.Add(this.text_litterinterval_end);
 			global::Gtk.Box.BoxChild w74 = ((global::Gtk.Box.BoxChild)(this.hbox47[this.text_litterinterval_end]));
 			w74.Position = 4;
@@ -1110,7 +1149,6 @@ namespace LevelEditor
 			this.text_brokeninterval_start.CanFocus = true;
 			this.text_brokeninterval_start.Name = "text_brokeninterval_start";
 			this.text_brokeninterval_start.IsEditable = true;
-			this.text_brokeninterval_start.InvisibleChar = '●';
 			this.hbox51.Add(this.text_brokeninterval_start);
 			global::Gtk.Box.BoxChild w79 = ((global::Gtk.Box.BoxChild)(this.hbox51[this.text_brokeninterval_start]));
 			w79.Position = 2;
@@ -1129,7 +1167,6 @@ namespace LevelEditor
 			this.text_brokeninterval_end.CanFocus = true;
 			this.text_brokeninterval_end.Name = "text_brokeninterval_end";
 			this.text_brokeninterval_end.IsEditable = true;
-			this.text_brokeninterval_end.InvisibleChar = '●';
 			this.hbox51.Add(this.text_brokeninterval_end);
 			global::Gtk.Box.BoxChild w81 = ((global::Gtk.Box.BoxChild)(this.hbox51[this.text_brokeninterval_end]));
 			w81.Position = 4;
@@ -1167,6 +1204,8 @@ namespace LevelEditor
 			this.vbox30.Add(this.hbox58);
 			global::Gtk.Box.BoxChild w88 = ((global::Gtk.Box.BoxChild)(this.vbox30[this.hbox58]));
 			w88.Position = 0;
+			w88.Expand = false;
+			w88.Fill = false;
 			// Container child vbox30.Gtk.Box+BoxChild
 			this.frame_conditions2 = new global::Gtk.Frame();
 			this.frame_conditions2.Name = "frame_conditions2";
@@ -1203,7 +1242,6 @@ namespace LevelEditor
 			this.text_secret_customers.CanFocus = true;
 			this.text_secret_customers.Name = "text_secret_customers";
 			this.text_secret_customers.IsEditable = false;
-			this.text_secret_customers.InvisibleChar = '●';
 			this.hbox55.Add(this.text_secret_customers);
 			global::Gtk.Box.BoxChild w90 = ((global::Gtk.Box.BoxChild)(this.hbox55[this.text_secret_customers]));
 			w90.Position = 1;
@@ -1253,7 +1291,6 @@ namespace LevelEditor
 			this.text_level_requirements.CanFocus = true;
 			this.text_level_requirements.Name = "text_level_requirements";
 			this.text_level_requirements.IsEditable = false;
-			this.text_level_requirements.InvisibleChar = '●';
 			this.hbox59.Add(this.text_level_requirements);
 			global::Gtk.Box.BoxChild w95 = ((global::Gtk.Box.BoxChild)(this.hbox59[this.text_level_requirements]));
 			w95.Position = 1;
@@ -1304,7 +1341,6 @@ namespace LevelEditor
 			this.text_min_instruct_steps.CanFocus = true;
 			this.text_min_instruct_steps.Name = "text_min_instruct_steps";
 			this.text_min_instruct_steps.IsEditable = true;
-			this.text_min_instruct_steps.InvisibleChar = '●';
 			this.hbox60.Add(this.text_min_instruct_steps);
 			global::Gtk.Box.BoxChild w101 = ((global::Gtk.Box.BoxChild)(this.hbox60[this.text_min_instruct_steps]));
 			w101.Position = 1;
@@ -1337,7 +1373,6 @@ namespace LevelEditor
 			this.text_unlock_item.CanFocus = true;
 			this.text_unlock_item.Name = "text_unlock_item";
 			this.text_unlock_item.IsEditable = false;
-			this.text_unlock_item.InvisibleChar = '●';
 			this.hbox79.Add(this.text_unlock_item);
 			global::Gtk.Box.BoxChild w105 = ((global::Gtk.Box.BoxChild)(this.hbox79[this.text_unlock_item]));
 			w105.Position = 1;
@@ -1638,10 +1673,10 @@ namespace LevelEditor
 			w144.Expand = false;
 			w144.Fill = false;
 			// Container child hbox20.Gtk.Box+BoxChild
-			this.明确食物订单 = new global::Gtk.HBox();
-			this.明确食物订单.Name = "明确食物订单";
-			this.明确食物订单.Spacing = 6;
-			// Container child 明确食物订单.Gtk.Box+BoxChild
+			this.hbox1 = new global::Gtk.HBox();
+			this.hbox1.Name = "hbox1";
+			this.hbox1.Spacing = 6;
+			// Container child hbox1.Gtk.Box+BoxChild
 			this.frame22 = new global::Gtk.Frame();
 			this.frame22.Name = "frame22";
 			this.frame22.ShadowType = ((global::Gtk.ShadowType)(2));
@@ -1656,7 +1691,7 @@ namespace LevelEditor
 			this.GtkScrolledWindow2.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow2.Gtk.Container+ContainerChild
 			this.tree_order_list = new global::Gtk.TreeView();
-			this.tree_order_list.WidthRequest = 320;
+			this.tree_order_list.WidthRequest = 360;
 			this.tree_order_list.CanFocus = true;
 			this.tree_order_list.Name = "tree_order_list";
 			this.GtkScrolledWindow2.Add(this.tree_order_list);
@@ -1664,15 +1699,15 @@ namespace LevelEditor
 			this.frame22.Add(this.GtkAlignment6);
 			this.label_order_list = new global::Gtk.Label();
 			this.label_order_list.Name = "label_order_list";
-			this.label_order_list.LabelProp = global::Mono.Unix.Catalog.GetString("<b>明确食物订单列表</b>");
+			this.label_order_list.LabelProp = global::Mono.Unix.Catalog.GetString("<b>确定食物订单列表</b>");
 			this.label_order_list.UseMarkup = true;
 			this.frame22.LabelWidget = this.label_order_list;
-			this.明确食物订单.Add(this.frame22);
-			global::Gtk.Box.BoxChild w148 = ((global::Gtk.Box.BoxChild)(this.明确食物订单[this.frame22]));
+			this.hbox1.Add(this.frame22);
+			global::Gtk.Box.BoxChild w148 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.frame22]));
 			w148.Position = 0;
 			w148.Expand = false;
 			w148.Fill = false;
-			// Container child 明确食物订单.Gtk.Box+BoxChild
+			// Container child hbox1.Gtk.Box+BoxChild
 			this.vbuttonbox_order_sequence = new global::Gtk.VButtonBox();
 			this.vbuttonbox_order_sequence.Name = "vbuttonbox_order_sequence";
 			this.vbuttonbox_order_sequence.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(1));
@@ -1710,89 +1745,348 @@ namespace LevelEditor
 			w151.Position = 2;
 			w151.Expand = false;
 			w151.Fill = false;
-			this.明确食物订单.Add(this.vbuttonbox_order_sequence);
-			global::Gtk.Box.BoxChild w152 = ((global::Gtk.Box.BoxChild)(this.明确食物订单[this.vbuttonbox_order_sequence]));
+			this.hbox1.Add(this.vbuttonbox_order_sequence);
+			global::Gtk.Box.BoxChild w152 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.vbuttonbox_order_sequence]));
 			w152.Position = 1;
 			w152.Expand = false;
 			w152.Fill = false;
-			this.hbox20.Add(this.明确食物订单);
-			global::Gtk.Box.BoxChild w153 = ((global::Gtk.Box.BoxChild)(this.hbox20[this.明确食物订单]));
+			this.hbox20.Add(this.hbox1);
+			global::Gtk.Box.BoxChild w153 = ((global::Gtk.Box.BoxChild)(this.hbox20[this.hbox1]));
 			w153.Position = 3;
 			w153.Expand = false;
 			w153.Fill = false;
 			w153.Padding = ((uint)(5));
 			// Container child hbox20.Gtk.Box+BoxChild
-			this.随机订单 = new global::Gtk.HBox();
-			this.随机订单.Name = "随机订单";
-			this.随机订单.Spacing = 6;
-			// Container child 随机订单.Gtk.Box+BoxChild
-			this.frame1 = new global::Gtk.Frame();
-			this.frame1.Name = "frame1";
-			this.frame1.ShadowType = ((global::Gtk.ShadowType)(0));
-			this.frame1.BorderWidth = ((uint)(6));
-			// Container child frame1.Gtk.Container+ContainerChild
+			this.frame2 = new global::Gtk.Frame();
+			this.frame2.Name = "frame2";
+			this.frame2.ShadowType = ((global::Gtk.ShadowType)(1));
+			this.frame2.BorderWidth = ((uint)(1));
+			// Container child frame2.Gtk.Container+ContainerChild
 			this.GtkAlignment8 = new global::Gtk.Alignment(0F, 0F, 1F, 1F);
 			this.GtkAlignment8.Name = "GtkAlignment8";
-			this.GtkAlignment8.LeftPadding = ((uint)(11));
-			this.GtkAlignment8.TopPadding = ((uint)(6));
+			this.GtkAlignment8.LeftPadding = ((uint)(12));
 			// Container child GtkAlignment8.Gtk.Container+ContainerChild
-			this.GtkScrolledWindow7 = new global::Gtk.ScrolledWindow();
-			this.GtkScrolledWindow7.Name = "GtkScrolledWindow7";
-			this.GtkScrolledWindow7.ShadowType = ((global::Gtk.ShadowType)(1));
-			// Container child GtkScrolledWindow7.Gtk.Container+ContainerChild
-			this.tree_randomOrder_list = new global::Gtk.TreeView();
-			this.tree_randomOrder_list.WidthRequest = 200;
-			this.tree_randomOrder_list.CanFocus = true;
-			this.tree_randomOrder_list.Name = "tree_randomOrder_list";
-			this.GtkScrolledWindow7.Add(this.tree_randomOrder_list);
-			this.GtkAlignment8.Add(this.GtkScrolledWindow7);
-			this.frame1.Add(this.GtkAlignment8);
+			this.GtkScrolledWindow6 = new global::Gtk.ScrolledWindow();
+			this.GtkScrolledWindow6.Name = "GtkScrolledWindow6";
+			this.GtkScrolledWindow6.ShadowType = ((global::Gtk.ShadowType)(1));
+			// Container child GtkScrolledWindow6.Gtk.Container+ContainerChild
+			this.treeview4 = new global::Gtk.TreeView();
+			this.treeview4.WidthRequest = 300;
+			this.treeview4.CanFocus = true;
+			this.treeview4.Name = "treeview4";
+			this.GtkScrolledWindow6.Add(this.treeview4);
+			this.GtkAlignment8.Add(this.GtkScrolledWindow6);
+			this.frame2.Add(this.GtkAlignment8);
 			this.GtkLabel24 = new global::Gtk.Label();
 			this.GtkLabel24.Name = "GtkLabel24";
-			this.GtkLabel24.LabelProp = global::Mono.Unix.Catalog.GetString("<b>随机食物订单列表</b>");
+			this.GtkLabel24.LabelProp = global::Mono.Unix.Catalog.GetString("<b>随机食物订单</b>");
 			this.GtkLabel24.UseMarkup = true;
-			this.GtkLabel24.UseUnderline = true;
-			this.frame1.LabelWidget = this.GtkLabel24;
-			this.随机订单.Add(this.frame1);
-			global::Gtk.Box.BoxChild w157 = ((global::Gtk.Box.BoxChild)(this.随机订单[this.frame1]));
-			w157.Position = 0;
+			this.frame2.LabelWidget = this.GtkLabel24;
+			this.hbox20.Add(this.frame2);
+			global::Gtk.Box.BoxChild w157 = ((global::Gtk.Box.BoxChild)(this.hbox20[this.frame2]));
+			w157.Position = 4;
 			w157.Expand = false;
 			w157.Fill = false;
-			// Container child 随机订单.Gtk.Box+BoxChild
+			// Container child hbox20.Gtk.Box+BoxChild
 			this.vbuttonbox1 = new global::Gtk.VButtonBox();
+			this.vbuttonbox1.WidthRequest = 50;
 			this.vbuttonbox1.Name = "vbuttonbox1";
-			this.vbuttonbox1.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(1));
 			// Container child vbuttonbox1.Gtk.ButtonBox+ButtonBoxChild
-			this.btn_add_randomOrder = new global::Gtk.Button();
-			this.btn_add_randomOrder.CanFocus = true;
-			this.btn_add_randomOrder.Name = "btn_add_randomOrder";
-			this.btn_add_randomOrder.UseUnderline = true;
-			this.btn_add_randomOrder.Label = global::Mono.Unix.Catalog.GetString("增加");
-			this.vbuttonbox1.Add(this.btn_add_randomOrder);
-			global::Gtk.ButtonBox.ButtonBoxChild w158 = ((global::Gtk.ButtonBox.ButtonBoxChild)(this.vbuttonbox1[this.btn_add_randomOrder]));
+			this.button6226 = new global::Gtk.Button();
+			this.button6226.CanFocus = true;
+			this.button6226.Name = "button6226";
+			this.button6226.UseUnderline = true;
+			this.button6226.Label = global::Mono.Unix.Catalog.GetString("增加");
+			this.vbuttonbox1.Add(this.button6226);
+			global::Gtk.ButtonBox.ButtonBoxChild w158 = ((global::Gtk.ButtonBox.ButtonBoxChild)(this.vbuttonbox1[this.button6226]));
 			w158.Expand = false;
 			w158.Fill = false;
 			// Container child vbuttonbox1.Gtk.ButtonBox+ButtonBoxChild
-			this.btn_delete_randomOrder = new global::Gtk.Button();
-			this.btn_delete_randomOrder.CanFocus = true;
-			this.btn_delete_randomOrder.Name = "btn_delete_randomOrder";
-			this.btn_delete_randomOrder.UseUnderline = true;
-			this.btn_delete_randomOrder.Label = global::Mono.Unix.Catalog.GetString("删除");
-			this.vbuttonbox1.Add(this.btn_delete_randomOrder);
-			global::Gtk.ButtonBox.ButtonBoxChild w159 = ((global::Gtk.ButtonBox.ButtonBoxChild)(this.vbuttonbox1[this.btn_delete_randomOrder]));
+			this.button6227 = new global::Gtk.Button();
+			this.button6227.CanFocus = true;
+			this.button6227.Name = "button6227";
+			this.button6227.UseUnderline = true;
+			this.button6227.Label = global::Mono.Unix.Catalog.GetString("删除");
+			this.vbuttonbox1.Add(this.button6227);
+			global::Gtk.ButtonBox.ButtonBoxChild w159 = ((global::Gtk.ButtonBox.ButtonBoxChild)(this.vbuttonbox1[this.button6227]));
 			w159.Position = 1;
 			w159.Expand = false;
 			w159.Fill = false;
-			this.随机订单.Add(this.vbuttonbox1);
-			global::Gtk.Box.BoxChild w160 = ((global::Gtk.Box.BoxChild)(this.随机订单[this.vbuttonbox1]));
-			w160.Position = 1;
+			this.hbox20.Add(this.vbuttonbox1);
+			global::Gtk.Box.BoxChild w160 = ((global::Gtk.Box.BoxChild)(this.hbox20[this.vbuttonbox1]));
+			w160.Position = 5;
 			w160.Expand = false;
 			w160.Fill = false;
-			this.hbox20.Add(this.随机订单);
-			global::Gtk.Box.BoxChild w161 = ((global::Gtk.Box.BoxChild)(this.hbox20[this.随机订单]));
-			w161.Position = 4;
+			// Container child hbox20.Gtk.Box+BoxChild
+			this.frame_auto_gen = new global::Gtk.Frame();
+			this.frame_auto_gen.Name = "frame_auto_gen";
+			this.frame_auto_gen.ShadowType = ((global::Gtk.ShadowType)(2));
+			this.frame_auto_gen.BorderWidth = ((uint)(1));
+			// Container child frame_auto_gen.Gtk.Container+ContainerChild
+			this.GtkAlignment7 = new global::Gtk.Alignment(0F, 0F, 1F, 1F);
+			this.GtkAlignment7.Name = "GtkAlignment7";
+			this.GtkAlignment7.LeftPadding = ((uint)(12));
+			// Container child GtkAlignment7.Gtk.Container+ContainerChild
+			this.vbox31 = new global::Gtk.VBox();
+			this.vbox31.Name = "vbox31";
+			this.vbox31.Spacing = 6;
+			// Container child vbox31.Gtk.Box+BoxChild
+			this.hbox69 = new global::Gtk.HBox();
+			this.hbox69.Name = "hbox69";
+			this.hbox69.Spacing = 6;
+			// Container child hbox69.Gtk.Box+BoxChild
+			this.label_diffculty = new global::Gtk.Label();
+			this.label_diffculty.Name = "label_diffculty";
+			this.label_diffculty.LabelProp = global::Mono.Unix.Catalog.GetString("难度：");
+			this.hbox69.Add(this.label_diffculty);
+			global::Gtk.Box.BoxChild w161 = ((global::Gtk.Box.BoxChild)(this.hbox69[this.label_diffculty]));
+			w161.Position = 0;
 			w161.Expand = false;
 			w161.Fill = false;
+			// Container child hbox69.Gtk.Box+BoxChild
+			this.combobox_autogen_difficulty = global::Gtk.ComboBox.NewText();
+			this.combobox_autogen_difficulty.AppendText(global::Mono.Unix.Catalog.GetString("1"));
+			this.combobox_autogen_difficulty.AppendText(global::Mono.Unix.Catalog.GetString("2"));
+			this.combobox_autogen_difficulty.AppendText(global::Mono.Unix.Catalog.GetString("3"));
+			this.combobox_autogen_difficulty.AppendText(global::Mono.Unix.Catalog.GetString("4"));
+			this.combobox_autogen_difficulty.AppendText(global::Mono.Unix.Catalog.GetString("5"));
+			this.combobox_autogen_difficulty.Name = "combobox_autogen_difficulty";
+			this.combobox_autogen_difficulty.Active = 0;
+			this.hbox69.Add(this.combobox_autogen_difficulty);
+			global::Gtk.Box.BoxChild w162 = ((global::Gtk.Box.BoxChild)(this.hbox69[this.combobox_autogen_difficulty]));
+			w162.Position = 1;
+			w162.Expand = false;
+			w162.Fill = false;
+			this.vbox31.Add(this.hbox69);
+			global::Gtk.Box.BoxChild w163 = ((global::Gtk.Box.BoxChild)(this.vbox31[this.hbox69]));
+			w163.Position = 0;
+			w163.Expand = false;
+			w163.Fill = false;
+			// Container child vbox31.Gtk.Box+BoxChild
+			this.hbox5 = new global::Gtk.HBox();
+			this.hbox5.Name = "hbox5";
+			this.hbox5.Spacing = 6;
+			// Container child hbox5.Gtk.Box+BoxChild
+			this.label3 = new global::Gtk.Label();
+			this.label3.Name = "label3";
+			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString("食物集：");
+			this.hbox5.Add(this.label3);
+			global::Gtk.Box.BoxChild w164 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.label3]));
+			w164.Position = 0;
+			w164.Expand = false;
+			w164.Fill = false;
+			// Container child hbox5.Gtk.Box+BoxChild
+			this.text_autogen_food_list = new global::Gtk.Entry();
+			this.text_autogen_food_list.CanFocus = true;
+			this.text_autogen_food_list.Name = "text_autogen_food_list";
+			this.text_autogen_food_list.IsEditable = true;
+			this.hbox5.Add(this.text_autogen_food_list);
+			global::Gtk.Box.BoxChild w165 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.text_autogen_food_list]));
+			w165.Position = 1;
+			// Container child hbox5.Gtk.Box+BoxChild
+			this.button_edit_autogen_food_list = new global::Gtk.Button();
+			this.button_edit_autogen_food_list.CanFocus = true;
+			this.button_edit_autogen_food_list.Name = "button_edit_autogen_food_list";
+			this.button_edit_autogen_food_list.UseUnderline = true;
+			this.button_edit_autogen_food_list.Label = global::Mono.Unix.Catalog.GetString("修改");
+			this.hbox5.Add(this.button_edit_autogen_food_list);
+			global::Gtk.Box.BoxChild w166 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.button_edit_autogen_food_list]));
+			w166.Position = 2;
+			w166.Expand = false;
+			w166.Fill = false;
+			this.vbox31.Add(this.hbox5);
+			global::Gtk.Box.BoxChild w167 = ((global::Gtk.Box.BoxChild)(this.vbox31[this.hbox5]));
+			w167.Position = 1;
+			w167.Expand = false;
+			w167.Fill = false;
+			// Container child vbox31.Gtk.Box+BoxChild
+			this.hbox7 = new global::Gtk.HBox();
+			this.hbox7.Name = "hbox7";
+			this.hbox7.Spacing = 6;
+			// Container child hbox7.Gtk.Box+BoxChild
+			this.label4 = new global::Gtk.Label();
+			this.label4.Name = "label4";
+			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString("顾客集：");
+			this.hbox7.Add(this.label4);
+			global::Gtk.Box.BoxChild w168 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.label4]));
+			w168.Position = 0;
+			w168.Expand = false;
+			w168.Fill = false;
+			// Container child hbox7.Gtk.Box+BoxChild
+			this.text_auto_customer_list = new global::Gtk.Entry();
+			this.text_auto_customer_list.CanFocus = true;
+			this.text_auto_customer_list.Name = "text_auto_customer_list";
+			this.text_auto_customer_list.IsEditable = true;
+			this.hbox7.Add(this.text_auto_customer_list);
+			global::Gtk.Box.BoxChild w169 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.text_auto_customer_list]));
+			w169.Position = 1;
+			// Container child hbox7.Gtk.Box+BoxChild
+			this.button_edit_autogen_customer_list = new global::Gtk.Button();
+			this.button_edit_autogen_customer_list.CanFocus = true;
+			this.button_edit_autogen_customer_list.Name = "button_edit_autogen_customer_list";
+			this.button_edit_autogen_customer_list.UseUnderline = true;
+			this.button_edit_autogen_customer_list.Label = global::Mono.Unix.Catalog.GetString("修改");
+			this.hbox7.Add(this.button_edit_autogen_customer_list);
+			global::Gtk.Box.BoxChild w170 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.button_edit_autogen_customer_list]));
+			w170.Position = 2;
+			w170.Expand = false;
+			w170.Fill = false;
+			this.vbox31.Add(this.hbox7);
+			global::Gtk.Box.BoxChild w171 = ((global::Gtk.Box.BoxChild)(this.vbox31[this.hbox7]));
+			w171.Position = 2;
+			w171.Expand = false;
+			w171.Fill = false;
+			// Container child vbox31.Gtk.Box+BoxChild
+			this.hbox71 = new global::Gtk.HBox();
+			this.hbox71.Name = "hbox71";
+			this.hbox71.Spacing = 6;
+			// Container child hbox71.Gtk.Box+BoxChild
+			this.label48 = new global::Gtk.Label();
+			this.label48.Name = "label48";
+			this.label48.LabelProp = global::Mono.Unix.Catalog.GetString("特殊顾客数量:");
+			this.hbox71.Add(this.label48);
+			global::Gtk.Box.BoxChild w172 = ((global::Gtk.Box.BoxChild)(this.hbox71[this.label48]));
+			w172.Position = 0;
+			w172.Expand = false;
+			w172.Fill = false;
+			// Container child hbox71.Gtk.Box+BoxChild
+			this.text_autogen_specialnum = new global::Gtk.Entry();
+			this.text_autogen_specialnum.WidthRequest = 50;
+			this.text_autogen_specialnum.CanFocus = true;
+			this.text_autogen_specialnum.Name = "text_autogen_specialnum";
+			this.text_autogen_specialnum.IsEditable = true;
+			this.hbox71.Add(this.text_autogen_specialnum);
+			global::Gtk.Box.BoxChild w173 = ((global::Gtk.Box.BoxChild)(this.hbox71[this.text_autogen_specialnum]));
+			w173.Position = 1;
+			w173.Expand = false;
+			this.vbox31.Add(this.hbox71);
+			global::Gtk.Box.BoxChild w174 = ((global::Gtk.Box.BoxChild)(this.vbox31[this.hbox71]));
+			w174.Position = 3;
+			w174.Expand = false;
+			w174.Fill = false;
+			// Container child vbox31.Gtk.Box+BoxChild
+			this.frame_auto_requirements = new global::Gtk.Frame();
+			this.frame_auto_requirements.Name = "frame_auto_requirements";
+			this.frame_auto_requirements.ShadowType = ((global::Gtk.ShadowType)(2));
+			// Container child frame_auto_requirements.Gtk.Container+ContainerChild
+			this.GtkAlignment1 = new global::Gtk.Alignment(0F, 0F, 1F, 1F);
+			this.GtkAlignment1.Name = "GtkAlignment1";
+			this.GtkAlignment1.LeftPadding = ((uint)(12));
+			// Container child GtkAlignment1.Gtk.Container+ContainerChild
+			this.vbox6 = new global::Gtk.VBox();
+			this.vbox6.Name = "vbox6";
+			this.vbox6.Spacing = 6;
+			// Container child vbox6.Gtk.Box+BoxChild
+			this.hbox75 = new global::Gtk.HBox();
+			this.hbox75.Name = "hbox75";
+			this.hbox75.Spacing = 6;
+			// Container child hbox75.Gtk.Box+BoxChild
+			this.check_autogen_random_customer = new global::Gtk.CheckButton();
+			this.check_autogen_random_customer.CanFocus = true;
+			this.check_autogen_random_customer.Name = "check_autogen_random_customer";
+			this.check_autogen_random_customer.Label = global::Mono.Unix.Catalog.GetString("指定顾客");
+			this.check_autogen_random_customer.DrawIndicator = true;
+			this.check_autogen_random_customer.UseUnderline = true;
+			this.hbox75.Add(this.check_autogen_random_customer);
+			global::Gtk.Box.BoxChild w175 = ((global::Gtk.Box.BoxChild)(this.hbox75[this.check_autogen_random_customer]));
+			w175.Position = 0;
+			// Container child hbox75.Gtk.Box+BoxChild
+			this.check_autogen_random_food = new global::Gtk.CheckButton();
+			this.check_autogen_random_food.CanFocus = true;
+			this.check_autogen_random_food.Name = "check_autogen_random_food";
+			this.check_autogen_random_food.Label = global::Mono.Unix.Catalog.GetString("指定食物");
+			this.check_autogen_random_food.DrawIndicator = true;
+			this.check_autogen_random_food.UseUnderline = true;
+			this.hbox75.Add(this.check_autogen_random_food);
+			global::Gtk.Box.BoxChild w176 = ((global::Gtk.Box.BoxChild)(this.hbox75[this.check_autogen_random_food]));
+			w176.Position = 1;
+			this.vbox6.Add(this.hbox75);
+			global::Gtk.Box.BoxChild w177 = ((global::Gtk.Box.BoxChild)(this.vbox6[this.hbox75]));
+			w177.Position = 0;
+			w177.Expand = false;
+			w177.Fill = false;
+			// Container child vbox6.Gtk.Box+BoxChild
+			this.hbox9 = new global::Gtk.HBox();
+			this.hbox9.Name = "hbox9";
+			this.hbox9.Spacing = 6;
+			// Container child hbox9.Gtk.Box+BoxChild
+			this.check_autogen_random_smile = new global::Gtk.CheckButton();
+			this.check_autogen_random_smile.CanFocus = true;
+			this.check_autogen_random_smile.Name = "check_autogen_random_smile";
+			this.check_autogen_random_smile.Label = global::Mono.Unix.Catalog.GetString("指定笑脸");
+			this.check_autogen_random_smile.DrawIndicator = true;
+			this.check_autogen_random_smile.UseUnderline = true;
+			this.hbox9.Add(this.check_autogen_random_smile);
+			global::Gtk.Box.BoxChild w178 = ((global::Gtk.Box.BoxChild)(this.hbox9[this.check_autogen_random_smile]));
+			w178.Position = 0;
+			// Container child hbox9.Gtk.Box+BoxChild
+			this.check_autogen_any_customer = new global::Gtk.CheckButton();
+			this.check_autogen_any_customer.CanFocus = true;
+			this.check_autogen_any_customer.Name = "check_autogen_any_customer";
+			this.check_autogen_any_customer.Label = global::Mono.Unix.Catalog.GetString("服务任意顾客总数");
+			this.check_autogen_any_customer.DrawIndicator = true;
+			this.check_autogen_any_customer.UseUnderline = true;
+			this.hbox9.Add(this.check_autogen_any_customer);
+			global::Gtk.Box.BoxChild w179 = ((global::Gtk.Box.BoxChild)(this.hbox9[this.check_autogen_any_customer]));
+			w179.Position = 1;
+			this.vbox6.Add(this.hbox9);
+			global::Gtk.Box.BoxChild w180 = ((global::Gtk.Box.BoxChild)(this.vbox6[this.hbox9]));
+			w180.Position = 1;
+			w180.Expand = false;
+			w180.Fill = false;
+			this.GtkAlignment1.Add(this.vbox6);
+			this.frame_auto_requirements.Add(this.GtkAlignment1);
+			this.GtkLabel22 = new global::Gtk.Label();
+			this.GtkLabel22.Name = "GtkLabel22";
+			this.GtkLabel22.LabelProp = global::Mono.Unix.Catalog.GetString("<b>过关条件</b>");
+			this.GtkLabel22.UseMarkup = true;
+			this.frame_auto_requirements.LabelWidget = this.GtkLabel22;
+			this.vbox31.Add(this.frame_auto_requirements);
+			global::Gtk.Box.BoxChild w183 = ((global::Gtk.Box.BoxChild)(this.vbox31[this.frame_auto_requirements]));
+			w183.Position = 4;
+			w183.Expand = false;
+			w183.Fill = false;
+			// Container child vbox31.Gtk.Box+BoxChild
+			this.vbuttonbox7 = new global::Gtk.VButtonBox();
+			this.vbuttonbox7.Name = "vbuttonbox7";
+			this.vbuttonbox7.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(3));
+			// Container child vbuttonbox7.Gtk.ButtonBox+ButtonBoxChild
+			this.btn_autogen_generate = new global::Gtk.Button();
+			this.btn_autogen_generate.CanFocus = true;
+			this.btn_autogen_generate.Name = "btn_autogen_generate";
+			this.btn_autogen_generate.UseUnderline = true;
+			this.btn_autogen_generate.Label = global::Mono.Unix.Catalog.GetString("生成关卡配置");
+			this.vbuttonbox7.Add(this.btn_autogen_generate);
+			global::Gtk.ButtonBox.ButtonBoxChild w184 = ((global::Gtk.ButtonBox.ButtonBoxChild)(this.vbuttonbox7[this.btn_autogen_generate]));
+			w184.Expand = false;
+			w184.Fill = false;
+			// Container child vbuttonbox7.Gtk.ButtonBox+ButtonBoxChild
+			this.button_autogen_requirements = new global::Gtk.Button();
+			this.button_autogen_requirements.CanFocus = true;
+			this.button_autogen_requirements.Name = "button_autogen_requirements";
+			this.button_autogen_requirements.UseUnderline = true;
+			this.button_autogen_requirements.Label = global::Mono.Unix.Catalog.GetString("重新生成过关条件");
+			this.vbuttonbox7.Add(this.button_autogen_requirements);
+			global::Gtk.ButtonBox.ButtonBoxChild w185 = ((global::Gtk.ButtonBox.ButtonBoxChild)(this.vbuttonbox7[this.button_autogen_requirements]));
+			w185.Position = 1;
+			w185.Expand = false;
+			w185.Fill = false;
+			this.vbox31.Add(this.vbuttonbox7);
+			global::Gtk.Box.BoxChild w186 = ((global::Gtk.Box.BoxChild)(this.vbox31[this.vbuttonbox7]));
+			w186.Position = 5;
+			this.GtkAlignment7.Add(this.vbox31);
+			this.frame_auto_gen.Add(this.GtkAlignment7);
+			this.label_auto_gen1 = new global::Gtk.Label();
+			this.label_auto_gen1.Name = "label_auto_gen1";
+			this.label_auto_gen1.LabelProp = global::Mono.Unix.Catalog.GetString("<b>自动生成配置</b>");
+			this.label_auto_gen1.UseMarkup = true;
+			this.frame_auto_gen.LabelWidget = this.label_auto_gen1;
+			this.hbox20.Add(this.frame_auto_gen);
+			global::Gtk.Box.BoxChild w189 = ((global::Gtk.Box.BoxChild)(this.hbox20[this.frame_auto_gen]));
+			w189.Position = 6;
+			w189.Expand = false;
+			w189.Fill = false;
+			w189.Padding = ((uint)(10));
 			this.GtkAlignment3.Add(this.hbox20);
 			this.frame_available_orders.Add(this.GtkAlignment3);
 			this.Label_Available_Orders = new global::Gtk.Label();
@@ -1801,15 +2095,15 @@ namespace LevelEditor
 			this.Label_Available_Orders.UseMarkup = true;
 			this.frame_available_orders.LabelWidget = this.Label_Available_Orders;
 			w1.Add(this.frame_available_orders);
-			global::Gtk.Box.BoxChild w164 = ((global::Gtk.Box.BoxChild)(w1[this.frame_available_orders]));
-			w164.Position = 2;
-			w164.Padding = ((uint)(5));
+			global::Gtk.Box.BoxChild w192 = ((global::Gtk.Box.BoxChild)(w1[this.frame_available_orders]));
+			w192.Position = 2;
+			w192.Padding = ((uint)(5));
 			// Internal child LevelEditor.LevelDialog.ActionArea
-			global::Gtk.HButtonBox w165 = this.ActionArea;
-			w165.Name = "dialog1_ActionArea";
-			w165.Spacing = 10;
-			w165.BorderWidth = ((uint)(5));
-			w165.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(2));
+			global::Gtk.HButtonBox w193 = this.ActionArea;
+			w193.Name = "dialog1_ActionArea";
+			w193.Spacing = 10;
+			w193.BorderWidth = ((uint)(5));
+			w193.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(2));
 			// Container child dialog1_ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.buttonCancel = new global::Gtk.Button();
 			this.buttonCancel.CanDefault = true;
@@ -1818,9 +2112,9 @@ namespace LevelEditor
 			this.buttonCancel.UseUnderline = true;
 			this.buttonCancel.Label = global::Mono.Unix.Catalog.GetString("关闭");
 			this.AddActionWidget(this.buttonCancel, -7);
-			global::Gtk.ButtonBox.ButtonBoxChild w166 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w165[this.buttonCancel]));
-			w166.Expand = false;
-			w166.Fill = false;
+			global::Gtk.ButtonBox.ButtonBoxChild w194 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w193[this.buttonCancel]));
+			w194.Expand = false;
+			w194.Fill = false;
 			// Container child dialog1_ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.buttonOk = new global::Gtk.Button();
 			this.buttonOk.CanDefault = true;
@@ -1828,17 +2122,17 @@ namespace LevelEditor
 			this.buttonOk.Name = "buttonOk";
 			this.buttonOk.UseUnderline = true;
 			this.buttonOk.Label = global::Mono.Unix.Catalog.GetString("保存");
-			w165.Add(this.buttonOk);
-			global::Gtk.ButtonBox.ButtonBoxChild w167 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w165[this.buttonOk]));
-			w167.Position = 1;
-			w167.Expand = false;
-			w167.Fill = false;
+			w193.Add(this.buttonOk);
+			global::Gtk.ButtonBox.ButtonBoxChild w195 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w193[this.buttonOk]));
+			w195.Position = 1;
+			w195.Expand = false;
+			w195.Fill = false;
 			if ((this.Child != null))
 			{
 				this.Child.ShowAll();
 			}
-			this.DefaultWidth = 1277;
-			this.DefaultHeight = 941;
+			this.DefaultWidth = 1940;
+			this.DefaultHeight = 938;
 			this.Show();
 			this.combobox_level_id.Changed += new global::System.EventHandler(this.OnComboboxLevelIdChanged);
 			this.btn_reload_level.Clicked += new global::System.EventHandler(this.OnBtnReloadLevelClicked);
@@ -1853,8 +2147,10 @@ namespace LevelEditor
 			this.button_order_up.Clicked += new global::System.EventHandler(this.OnButtonOrderUpClicked);
 			this.button_order_down.Clicked += new global::System.EventHandler(this.OnButtonOrderDownClicked);
 			this.button_normalize_weight.Clicked += new global::System.EventHandler(this.OnButtonNormalizeWeightClicked);
-			this.btn_add_randomOrder.Clicked += new global::System.EventHandler(this.OnClickAddRandomFoodOrder);
-			this.btn_delete_randomOrder.Clicked += new global::System.EventHandler(this.OnClickDeleteRandomOrder);
+			this.button_edit_autogen_food_list.Clicked += new global::System.EventHandler(this.OnButtonEditAutogenFoodListClicked);
+			this.button_edit_autogen_customer_list.Clicked += new global::System.EventHandler(this.OnButtonEditAutogenCustomerListClicked);
+			this.btn_autogen_generate.Clicked += new global::System.EventHandler(this.OnBtnAutogenGenerateClicked);
+			this.button_autogen_requirements.Clicked += new global::System.EventHandler(this.OnButtonAutogenRequirementsClicked);
 			this.buttonCancel.Clicked += new global::System.EventHandler(this.OnButtonCancelClicked);
 			this.buttonOk.Clicked += new global::System.EventHandler(this.OnButtonOkClicked);
 		}
