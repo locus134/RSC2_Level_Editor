@@ -25,6 +25,7 @@ namespace LevelEditor
         Dictionary<string, List<string>> m_foodCustomerDict;
         LevelData m_curLevelData;
         ListStore m_orderListStore;
+        ListStore m_randomOrderListStore;
         Pixbuf ADD_ICON;
 
         enum OrderSeq
@@ -34,11 +35,19 @@ namespace LevelEditor
             weiget,
             minInterval,
             maxInterval,
-            randomFood,
             lastestCome,
             guide,
             customerKey,
             foods,
+        };
+
+        enum RandomOrderSeq
+        {
+            customerIcon = 0,
+            minInterval,
+            maxInterval,
+            randomRule,
+            customerKey,
         };
 
         public LevelDialog(Gtk.Window parent, string mapKey)
@@ -87,41 +96,65 @@ namespace LevelEditor
             tree_level_customer.AppendColumn("名称", new CellRendererText(), "text", 1);
             tree_level_customer.Selection.Mode = SelectionMode.Multiple;
 
-            tree_order_list.AppendColumn("顾客", new CellRendererPixbuf(), "pixbuf", (int)OrderSeq.customerIcon);
-            tree_order_list.AppendColumn("食物", new CellRendererPixbuf(), "pixbuf", (int)OrderSeq.foodIcon);
+            do
+            {
+                tree_order_list.AppendColumn("顾客", new CellRendererPixbuf(), "pixbuf", (int)OrderSeq.customerIcon);
+                tree_order_list.AppendColumn("食物", new CellRendererPixbuf(), "pixbuf", (int)OrderSeq.foodIcon);
 
-            CellRendererText cell = new CellRendererText();
-            cell.Editable = true;
-            cell.Edited += OnEditedOrderWeight;
-            tree_order_list.AppendColumn("比重", cell, "text", (int)OrderSeq.weiget);
+                CellRendererText cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedOrderWeight;
+                tree_order_list.AppendColumn("比重", cell, "text", (int)OrderSeq.weiget);
 
-            cell = new CellRendererText();
-            cell.Editable = true;
-            cell.Edited += OnEditedOrderIntervalStart;
-            tree_order_list.AppendColumn("间隔始", cell, "text", (int)OrderSeq.minInterval);
+                cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedOrderIntervalStart;
+                tree_order_list.AppendColumn("间隔始", cell, "text", (int)OrderSeq.minInterval);
 
-            cell = new CellRendererText();
-            cell.Editable = true;
-            cell.Edited += OnEditedOrderIntervalEnd;
-            tree_order_list.AppendColumn("间隔末", cell, "text", (int)OrderSeq.maxInterval);
+                cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedOrderIntervalEnd;
+                tree_order_list.AppendColumn("间隔末", cell, "text", (int)OrderSeq.maxInterval);
 
-            cell = new CellRendererText();
-            cell.Editable = true;
-            cell.Edited += OnEditedOrderRandomFood;
-            tree_order_list.AppendColumn("随机食物", cell, "text", (int)OrderSeq.randomFood);
 
-            cell = new CellRendererText();
-            cell.Editable = true;
-            cell.Edited += OnEditedLatestFirstCome;
-            tree_order_list.AppendColumn("最晚", cell, "text", (int)OrderSeq.lastestCome);
+                cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedLatestFirstCome;
+                tree_order_list.AppendColumn("最晚", cell, "text", (int)OrderSeq.lastestCome);
 
-            CellRendererToggle cellToggle = new CellRendererToggle();
-            cellToggle.Activatable = true;
-            cellToggle.Toggled += OnToggledGuideOrder;
-            tree_order_list.AppendColumn("引导?", cellToggle, "active", (int)OrderSeq.guide);
-            m_orderListStore = new ListStore(typeof(Pixbuf), typeof(Pixbuf),typeof(string), typeof(int),typeof(int), typeof(string), 
-                                             typeof(int), typeof(bool), typeof(string), typeof(List<string>));
-            tree_order_list.Model = m_orderListStore;
+                CellRendererToggle cellToggle = new CellRendererToggle();
+                cellToggle.Activatable = true;
+                cellToggle.Toggled += OnToggledGuideOrder;
+                tree_order_list.AppendColumn("引导?", cellToggle, "active", (int)OrderSeq.guide);
+                m_orderListStore = new ListStore(typeof(Pixbuf), typeof(Pixbuf), typeof(string), typeof(int), typeof(int), 
+                                                 typeof(int), typeof(bool), typeof(string), typeof(List<string>));
+                tree_order_list.Model = m_orderListStore;
+            } while (false);
+
+            do
+            {
+                tree_randomOrder_list.AppendColumn("顾客", new CellRendererPixbuf(), "pixbuf", (int)RandomOrderSeq.customerIcon);
+
+                CellRendererText cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedOrderIntervalStart;
+                tree_randomOrder_list.AppendColumn("间隔始", cell, "text", (int)RandomOrderSeq.minInterval);
+
+                cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedOrderIntervalEnd;
+                tree_randomOrder_list.AppendColumn("间隔末", cell, "text", (int)RandomOrderSeq.maxInterval);
+
+                cell = new CellRendererText();
+                cell.Editable = true;
+                cell.Edited += OnEditedOrderRandomFood;
+                tree_randomOrder_list.AppendColumn("随机食物", cell, "text", (int)RandomOrderSeq.randomRule);
+
+                m_randomOrderListStore = new ListStore(typeof(Pixbuf), typeof(int), typeof(int), typeof(string),
+                                                 typeof(string));
+                tree_randomOrder_list.Model = m_randomOrderListStore;
+            } while (false);
+
 
             label_level_range.Text = string.Format("关卡ID范围：1-{0}", m_maxLevelId);
             for (int i = 1; i <= m_curRestData.level_count; ++i)
@@ -142,14 +175,14 @@ namespace LevelEditor
 
         void ClearAutogen()
         {
-            combobox_autogen_difficulty.Active = 0;
-            text_autogen_food_list.Text = "";
-            text_auto_customer_list.Text = "";
-            text_autogen_specialnum.Text = "0";
-            check_autogen_random_food.Active = false;
-            check_autogen_random_customer.Active = false;
-            check_autogen_random_smile.Active = false;
-            check_autogen_any_customer.Active = false;
+            //combobox_autogen_difficulty.Active = 0;
+            //text_autogen_food_list.Text = "";
+            //text_auto_customer_list.Text = "";
+            //text_autogen_specialnum.Text = "0";
+            //check_autogen_random_food.Active = false;
+            //check_autogen_random_customer.Active = false;
+            //check_autogen_random_smile.Active = false;
+            //check_autogen_any_customer.Active = false;
         }
 
         void ClearData()
@@ -190,6 +223,7 @@ namespace LevelEditor
             text_level_comments.Buffer.Text = "";
 
             m_orderListStore.Clear();
+            m_randomOrderListStore.Clear();
 
             ClearAutogen();
         }
@@ -235,7 +269,7 @@ namespace LevelEditor
                 foreach(SecretCustomer secret in m_curLevelData.secret_customers)
                 {
                     showStr += secret.customer;
-                    if(secret.showOrder > 0)
+                    if (secret.showOrder > 0)
                     {
                         showStr += "<" + secret.showOrder.ToString() + ">";
                     }
@@ -251,27 +285,33 @@ namespace LevelEditor
             }
 
             string requireStr = "";
-            if(m_curLevelData.requirements.requiredCustomers.Count > 0)
+            if (m_curLevelData.requirements.requiredCustomers.Count > 0)
             {
-                foreach(var req in m_curLevelData.requirements.requiredCustomers)
+                foreach (var req in m_curLevelData.requirements.requiredCustomers)
                 {
-                    requireStr += string.Format("{0}*{1};", req.name, req.number); 
+                    requireStr += string.Format("{0}*{1};", req.name, req.number);
                 }
-            }else if(m_curLevelData.requirements.requiredFoods.Count > 0){
+            }
+            else if (m_curLevelData.requirements.requiredFoods.Count > 0)
+            {
                 foreach (var req in m_curLevelData.requirements.requiredFoods)
                 {
                     requireStr += string.Format("{0}*{1};", req.name, req.number);
                 }
-            }else if(!m_curLevelData.requirements.allowBurn){
+            }
+            else if (!m_curLevelData.requirements.allowBurn)
+            {
                 requireStr += "no_burn;";
-            }else if (!m_curLevelData.requirements.allowLostCustomer)
+            }
+            else if (!m_curLevelData.requirements.allowLostCustomer)
             {
                 requireStr += "no_lost;";
-            }else if (m_curLevelData.requirements.smileCount > 0)
+            }
+            else if (m_curLevelData.requirements.smileCount > 0)
             {
                 requireStr += "smile*" + m_curLevelData.requirements.smileCount + ";";
             }
-            if(requireStr.Length > 0)
+            if (requireStr.Length > 0)
             {
                 requireStr = requireStr.Substring(0, requireStr.Length - 1);
             }
@@ -283,11 +323,11 @@ namespace LevelEditor
             {
                 //text_unlock_item.Text = JsonConvert.SerializeObject(m_curLevelData.unlock_items);
                 string unlocks = "";
-                foreach(int id in m_curLevelData.unlock_items)
+                foreach (int id in m_curLevelData.unlock_items)
                 {
                     unlocks += id.ToString() + ";";
                 }
-                if(unlocks.Length > 0)
+                if (unlocks.Length > 0)
                 {
                     unlocks = unlocks.Substring(0, unlocks.Length - 1);
                 }
@@ -320,7 +360,10 @@ namespace LevelEditor
             AppendOrderList(m_curLevelData.guide_orders, true);
             AppendOrderList(m_curLevelData.orders, false);
             AppendOrderList(m_curLevelData.specialOrders, false);
-            AppendOrderList(m_curLevelData.anyfoodOrders, false);
+
+
+            m_randomOrderListStore.Clear();
+            AppendRandomOrderList(m_curLevelData.randomfoodOrders, false);
         }
 
         protected bool ReadData()
@@ -502,7 +545,6 @@ namespace LevelEditor
                     ord.weight = float.Parse((string)m_orderListStore.GetValue(iter, (int)OrderSeq.weiget));
                     ord.interval.min = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.minInterval);
                     ord.interval.max = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.maxInterval);
-                    ord.randomFoodRule = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.randomFood);
                     ord.latestFirstCome = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.lastestCome);
                     bool isGuide = (bool)m_orderListStore.GetValue(iter, (int)OrderSeq.guide);
                     ord.customer = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.customerKey);
@@ -518,15 +560,25 @@ namespace LevelEditor
                     }
                     else if(ord.interval.min > 0 && ord.interval.max > 0)
                     {
-                        if(ord.randomFoodRule != "none")
-                        {
-                            levelData.anyfoodOrders.Add(ord);
-                        }else {
-                            levelData.specialOrders.Add(ord);
-                        }
+                        levelData.specialOrders.Add(ord);
                     }
                 } while (m_orderListStore.IterNext(ref iter));
             }
+
+            if(m_randomOrderListStore.GetIterFirst(out iter))
+            {
+                do
+                {
+                    CustomerOrder order = new CustomerOrder();
+                    order.customer = (string)m_randomOrderListStore.GetValue(iter, (int)RandomOrderSeq.customerKey);
+                    order.interval.min = (int)m_randomOrderListStore.GetValue(iter, (int)RandomOrderSeq.minInterval);
+                    order.interval.max = (int)m_randomOrderListStore.GetValue(iter, (int)RandomOrderSeq.maxInterval);
+                    order.randomFoodRule = (string)m_randomOrderListStore.GetValue(iter, (int)RandomOrderSeq.randomRule);
+
+                    levelData.randomfoodOrders.Add(order);
+                } while (m_randomOrderListStore.IterNext(ref iter));
+            }
+
 
             m_curLevelData = levelData;
             return true;
@@ -609,7 +661,20 @@ namespace LevelEditor
                     }
                 }
 
-                m_orderListStore.AppendValues(custIcon, foodIcon, ord.weight.ToString(), ord.interval.min, ord.interval.max, ord.randomFoodRule, ord.latestFirstCome, isGuide, ord.customer, ord.foods);
+                m_orderListStore.AppendValues(custIcon, foodIcon, ord.weight.ToString(), ord.interval.min, ord.interval.max, ord.latestFirstCome, isGuide, ord.customer, ord.foods);
+            }
+        }
+
+        protected void AppendRandomOrderList(List<CustomerOrder> orderList, bool isGuide)
+        {
+            int iconSize = 60;
+            foreach (CustomerOrder ord in orderList)
+            {
+                Pixbuf pb = new Pixbuf(Utils.GetCustomerImagePath(ord.customer));
+                float scale = (float)iconSize / pb.Height;
+                Pixbuf custIcon = pb.ScaleSimple((int)(scale * pb.Width), iconSize, InterpType.Hyper);
+
+                m_randomOrderListStore.AppendValues(custIcon, ord.interval.min, ord.interval.max, ord.randomFoodRule, ord.customer);
             }
         }
 
@@ -651,7 +716,6 @@ namespace LevelEditor
 
                         m_orderListStore.SetValue(iter, (int)OrderSeq.minInterval, 0);
                         m_orderListStore.SetValue(iter, (int)OrderSeq.maxInterval, 0);
-                        m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, "none"); 
                     }else{
                         m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, weight.ToString());
                     }
@@ -671,7 +735,7 @@ namespace LevelEditor
 
                     if (num > 0)
                     {
-                        m_orderListStore.SetValue(iter, 2, "0");
+                        m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, "0");
                         int end = (int)m_orderListStore.GetValue(iter, (int)OrderSeq.maxInterval);
                         if (end < num)
                         {
@@ -680,6 +744,24 @@ namespace LevelEditor
                     }
                 }
             }
+            else if(m_randomOrderListStore.GetIterFromString(out iter, args.Path))
+            {
+                int num;
+                if (Utils.ParseInteger(args.NewText, out num, this) && num >= 0)
+                {
+                    m_randomOrderListStore.SetValue(iter, (int)RandomOrderSeq.minInterval, num);
+
+                    if (num > 0)
+                    {
+                        int end = (int)m_randomOrderListStore.GetValue(iter, (int)RandomOrderSeq.maxInterval);
+                        if (end < num)
+                        {
+                            m_randomOrderListStore.SetValue(iter, (int)RandomOrderSeq.maxInterval, num + 1);
+                        }
+                    }
+                }
+            }
+            
         }
 
         protected void OnEditedOrderIntervalEnd(object o, EditedArgs args)
@@ -707,28 +789,43 @@ namespace LevelEditor
                     }
                 }
             }
+            else if (m_randomOrderListStore.GetIterFromString(out iter, args.Path))
+            {
+                int num;
+                if (Utils.ParseInteger(args.NewText, out num, this) && num >= 0)
+                {
+                    m_randomOrderListStore.SetValue(iter, (int)RandomOrderSeq.maxInterval, num);
+
+                    if (num > 0)
+                    {
+                        int start = (int)m_randomOrderListStore.GetValue(iter, (int)RandomOrderSeq.minInterval);
+                        if (start == 0)
+                        {
+                            m_randomOrderListStore.SetValue(iter, (int)RandomOrderSeq.minInterval, 1);
+                        }
+                        else if (start > num)
+                        {
+                            m_randomOrderListStore.SetValue(iter, (int)RandomOrderSeq.minInterval, num);
+                        }
+                    }
+                }
+            }
         }
 
         protected void OnEditedOrderRandomFood(object o, EditedArgs args)
         {
             TreeIter iter;
-            if (m_orderListStore.GetIterFromString(out iter, args.Path))
+            if (m_randomOrderListStore.GetIterFromString(out iter, args.Path))
             {
                 string rule = args.NewText;
 
                 if (rule == "only2" || rule == "only3" || rule == "more2" || rule == "more3" )
                 {
-                    
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.weiget, "0");
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, rule);
-                }
-                else if(rule == "none" || rule == "")
-                {
-                    m_orderListStore.SetValue(iter, (int)OrderSeq.randomFood, "none");
+                    m_randomOrderListStore.SetValue(iter, (int)RandomOrderSeq.randomRule, rule);
                 }
                 else{
                     MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Close,
-                                                          "不支持的随机食物规则，只能:\nnone,only2,more2,only3,more3\n的一种");
+                                                          "不支持的随机食物规则，只能是:\n only2,more2,only3,more3 \n的一种");
                     dlg.Run();
                     dlg.Destroy();
                 }
@@ -899,7 +996,6 @@ namespace LevelEditor
             float w1 = float.Parse((string)m_orderListStore.GetValue(iter1, (int)OrderSeq.weiget));
             int interval_min1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.minInterval);
             int interval_max1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.maxInterval);
-            string randomFood1 = (string)m_orderListStore.GetValue(iter1, (int)OrderSeq.randomFood); 
             int lc1 = (int)m_orderListStore.GetValue(iter1, (int)OrderSeq.lastestCome);
             bool guide1 = (bool)m_orderListStore.GetValue(iter1, (int)OrderSeq.guide);
             string customer1 = (string)m_orderListStore.GetValue(iter1, (int)OrderSeq.customerKey);
@@ -910,14 +1006,13 @@ namespace LevelEditor
             float w2 = float.Parse((string)m_orderListStore.GetValue(iter2, (int)OrderSeq.weiget));
             int interval_min2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.minInterval);
             int interval_max2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.maxInterval);
-            string randomFood2 = (string)m_orderListStore.GetValue(iter2, (int)OrderSeq.randomFood); 
             int lc2 = (int)m_orderListStore.GetValue(iter2, (int)OrderSeq.lastestCome);
             bool guide2 = (bool)m_orderListStore.GetValue(iter2, (int)OrderSeq.guide);
             string customer2 = (string)m_orderListStore.GetValue(iter2, (int)OrderSeq.customerKey);
             List<string> foods2 = (List<string>)m_orderListStore.GetValue(iter2, (int)OrderSeq.foods);
 
-            m_orderListStore.SetValues(iter1, custIcon2, foodIcon2, w2.ToString(), interval_min2, interval_max2, randomFood2, lc2, guide2, customer2, foods2);
-            m_orderListStore.SetValues(iter2, custIcon1, foodIcon1, w1.ToString(), interval_min1, interval_max1, randomFood1, lc1, guide1, customer1, foods1);
+            m_orderListStore.SetValues(iter1, custIcon2, foodIcon2, w2.ToString(), interval_min2, interval_max2, lc2, guide2, customer2, foods2);
+            m_orderListStore.SetValues(iter2, custIcon1, foodIcon1, w1.ToString(), interval_min1, interval_max1, lc1, guide1, customer1, foods1);
         }
 
         protected void OnButtonOrderUpClicked(object sender, EventArgs e)
@@ -1000,19 +1095,21 @@ namespace LevelEditor
                 _lvlMgr.SetMapLevelDatas(m_curRestData.key, m_allLevelData);
                 try{
                     _lvlMgr.saveLevelData(m_curLevelData);
+                    MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Close,
+                                                      "保存成功！");
+                    dlg.Run();
+                    dlg.Destroy();
                 }catch(Exception err)
                 {
                     Console.WriteLine("Save LevelData Error:" + err.ToString());
+                    throw err;
                 }
 
                 //string jsonStr = _lvlMgr.GetJsonString(m_curRestData.key);
                 //string path = m_levelFileDir + m_curRestData.key + ".json";
                 //File.WriteAllText(path, jsonStr);
 
-                MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Close,
-                                                      "保存成功！");
-                dlg.Run();
-                dlg.Destroy();
+
             }
         }
 
@@ -1086,16 +1183,71 @@ namespace LevelEditor
 
         protected void OnBtnConfigLevelRequirementsClicked(object sender, EventArgs args)
         {
-            List<string> customerList = new List<string>(m_curRestData.customer_list);
+            List<string> customerList = new List<string>();
+            List<string> foodList = new List<string>();
+            TreeIter iter;
+            if (m_orderListStore.GetIterFirst(out iter))
+            {
+                do
+                {
+                    string customer = (string)m_orderListStore.GetValue(iter, (int)OrderSeq.customerKey);
+                    if(!customerList.Contains(customer))
+                    {
+                        customerList.Add(customer);
+                    }
+                    List<string> foods = (List<string>)m_orderListStore.GetValue(iter, (int)OrderSeq.foods);
+                    foreach(string food in foods)
+                    {
+                        if(!foodList.Contains(food))
+                        {
+                            foodList.Add(food);
+                        }
+                    }
+                } while (m_orderListStore.IterNext(ref iter));
+            }
+
             customerList.AddRange(m_curRestData.special_customer_list);
-            RequirementEditDialog dlg = new RequirementEditDialog(this, customerList, m_curRestData.food_list, m_curLevelData.requirements);
+            RequirementEditDialog dlg = new RequirementEditDialog(this, customerList, foodList, m_curLevelData.requirements);
             if (dlg.Run() == (int)ResponseType.Ok)
             {
                 Requirements requirements = dlg.Requirements;
                 if (requirements != null)
                 {
                     m_curLevelData.requirements = requirements;
-                    text_level_requirements.Text = JsonConvert.SerializeObject(requirements);
+
+                    string requireStr = "";
+                    if (requirements.requiredCustomers.Count > 0)
+                    {
+                        foreach (var req in requirements.requiredCustomers)
+                        {
+                            requireStr += string.Format("{0}*{1};", req.name, req.number);
+                        }
+                    }
+                    if (requirements.requiredFoods.Count > 0)
+                    {
+                        foreach (var req in requirements.requiredFoods)
+                        {
+                            requireStr += string.Format("{0}*{1};", req.name, req.number);
+                        }
+                    }
+                    if (!requirements.allowBurn)
+                    {
+                        requireStr += "no_burn;";
+                    }
+                    if (!requirements.allowLostCustomer)
+                    {
+                        requireStr += "no_lost;";
+                    }
+                    if (requirements.smileCount > 0)
+                    {
+                        requireStr += "smile*" + requirements.smileCount + ";";
+                    }
+                    if (requireStr.Length > 0)
+                    {
+                        requireStr = requireStr.Substring(0, requireStr.Length - 1);
+                    }
+                    text_level_requirements.Text = requireStr;
+                    //text_level_requirements.Text = JsonConvert.SerializeObject(requirements);
                 }
             }
             dlg.Destroy();
@@ -1170,276 +1322,316 @@ namespace LevelEditor
             dlg.Destroy();
         }
 
-        protected void OnButtonEditAutogenFoodListClicked(object sender, EventArgs e)
+        protected void OnClickAddRandomFoodOrder(object sender, EventArgs e)
         {
-            Dictionary<string, float> foodWeights = null;
-            string jsonStr = text_autogen_food_list.Text;
-            if (!string.IsNullOrEmpty(jsonStr))
-            {
-                foodWeights = JsonConvert.DeserializeObject<Dictionary<string, float>>(jsonStr);
-            }
-            FoodWeightSelectDialog dlg = new FoodWeightSelectDialog(this, m_curRestData.food_list, foodWeights);
-            if (dlg.Run() == (int)ResponseType.Ok)
-            {
-                foodWeights = dlg.FoodWeights;
-                if (foodWeights != null && foodWeights.Count > 0)
-                {
-                    text_autogen_food_list.Text = JsonConvert.SerializeObject(foodWeights);
-                }
-                else
-                {
-                    text_autogen_food_list.Text = "";
-                }
-            }
-            dlg.Destroy();
-        }
-
-        protected void OnButtonEditAutogenCustomerListClicked(object sender, EventArgs e)
-        {
-            List<string> customerList = new List<string>(m_curRestData.customer_list);
-            customerList.AddRange(m_curRestData.special_customer_list);
-
             List<string> selCustomers = null;
-            string jsonStr = text_auto_customer_list.Text;
-            if (!string.IsNullOrEmpty(jsonStr))
-            {
-                selCustomers = JsonConvert.DeserializeObject<List<string>>(jsonStr);
-            }
-
-            CustomerSelectDialog dlg = new CustomerSelectDialog(this, customerList, selCustomers);
+            CustomerSelectDialog dlg = new CustomerSelectDialog(this, m_curRestData.customer_list, selCustomers);
             if (dlg.Run() == (int)ResponseType.Ok)
             {
                 selCustomers = dlg.SelectedCustomers;
 
                 if (selCustomers != null && selCustomers.Count > 0)
                 {
-                    text_auto_customer_list.Text = JsonConvert.SerializeObject(selCustomers);
-                }
-                else
-                {
-                    text_auto_customer_list.Text = "";
+                    foreach(string cusKey in selCustomers)
+                    {
+                        int iconSize = 60;
+                        Pixbuf pb = new Pixbuf(Utils.GetCustomerImagePath(cusKey));
+                        float scale = (float)iconSize / pb.Height;
+                        Pixbuf custIcon = pb.ScaleSimple((int)(scale * pb.Width), iconSize, InterpType.Hyper);
+
+                        m_randomOrderListStore.AppendValues(custIcon, 5, 10, "more3", cusKey);
+                    }
                 }
             }
             dlg.Destroy();
         }
 
-        protected AutoGenConfig GetAutogenConfig(out string errMsg)
+        protected void OnClickDeleteRandomOrder(object sender, EventArgs e)
         {
-            errMsg = null;
-            AutoGenConfig autoGenConfig = new AutoGenConfig();
-            do
+            TreeIter iter;
+            if (tree_randomOrder_list.Selection.GetSelected(out iter))
             {
-                autoGenConfig.type = (LevelType)(combobox_config_type.Active + 1);
-                autoGenConfig.difficulty = combobox_autogen_difficulty.Active + 1;
-                if (!int.TryParse(text_config_total.Text, out autoGenConfig.total) || autoGenConfig.total <= 0)
+                TreePath path = m_randomOrderListStore.GetPath(iter);
+                if (m_randomOrderListStore.Remove(ref iter))
                 {
-                    errMsg = "输入的关卡参数值有误！";
-                    break;
-                }
-
-                if (!int.TryParse(text_config_max_order.Text, out autoGenConfig.maxOrder) || autoGenConfig.maxOrder <= 0)
-                {
-                    errMsg = "输入的最大订单数有误！";
-                    break;
-                }
-
-                if (!int.TryParse(text_autogen_specialnum.Text, out autoGenConfig.specialNum) || autoGenConfig.specialNum < 0)
-                {
-                    errMsg = "输入的特殊顾客数量有误！";
-                    break;
-                }
-
-                if (!int.TryParse(text_config_full_patience.Text, out autoGenConfig.fullPatienceNum) || autoGenConfig.fullPatienceNum < 0)
-                {
-                    errMsg = "满耐心值有误！";
-                    break;
-                }
-
-                string[] strArr = text_config_first_arrivals.Text.Split(',');
-                if (strArr.Length != autoGenConfig.maxOrder)
-                {
-                    errMsg = "输入的首次来客时间个数与最大订单数不符";
-                    break;
-                }
-                for (int i = 0; i < strArr.Length; ++i)
-                {
-                    float time;
-                    if (!float.TryParse(strArr[i], out time))
+                    if (m_randomOrderListStore.GetIter(out iter, path))
                     {
-                        errMsg = "输入的首次来客时间有误！";
-                        break;
+                        tree_randomOrder_list.Selection.SelectIter(iter);
                     }
-                    autoGenConfig.firstArrivals.Add(time);
                 }
-                if (errMsg != null)
-                {
-                    break;
-                }
-
-                float fNum;
-                if (!float.TryParse(text_config_order_interval_start.Text, out fNum) || fNum < 1e-6)
-                {
-                    errMsg = "请输入正确的最小订单间隔时间";
-                    break;
-                }
-                autoGenConfig.orderInterval.min = fNum;
-
-                if (!float.TryParse(text_config_order_interval_end.Text, out fNum) || fNum < 1e-6)
-                {
-                    errMsg = "请输入正确的最大订单间隔时间";
-                    break;
-                }
-                autoGenConfig.orderInterval.max = fNum;
-
-
-                float decay_intv, decay_rate, decay_limit;
-                if (!float.TryParse(text_waitdecay_interval.Text, out decay_intv)
-                    || !float.TryParse(text_waitdecay_rate.Text, out decay_rate)
-                    || !float.TryParse(text_waitdecay_limit.Text, out decay_limit))
-                {
-                    errMsg = "请输入正确的等待时间衰减配置";
-                    break;
-                }
-                autoGenConfig.waitDecay.interval = decay_intv;
-                autoGenConfig.waitDecay.rate = decay_rate;
-                autoGenConfig.waitDecay.limit = decay_limit;
-
-                //if (!float.TryParse(text_burndecay_interval.Text, out decay_intv)
-                //    || !float.TryParse(text_burndecay_rate.Text, out decay_rate)
-                //    || !float.TryParse(text_burndecay_limit.Text, out decay_limit))
-                //{
-                //    errMsg = "请输入正确的烧焦时间衰减配置";
-                //    break;
-                //}
-                //autoGenConfig.burnDecay.interval = decay_intv;
-                //autoGenConfig.burnDecay.rate = decay_rate;
-                //autoGenConfig.burnDecay.limit = decay_limit;
-
-                if (!float.TryParse(text_orderdecay_interval.Text, out decay_intv)
-                    || !float.TryParse(text_orderdecay_rate.Text, out decay_rate)
-                    || !float.TryParse(text_orderdecay_limit.Text, out decay_limit))
-                {
-                    errMsg = "请输入正确的来客时间衰减配置";
-                    break;
-                }
-                autoGenConfig.orderDecay.interval = decay_intv;
-                autoGenConfig.orderDecay.rate = decay_rate;
-                autoGenConfig.orderDecay.limit = decay_limit;
-
-                if (!float.TryParse(text_cookingdecay_interval.Text, out decay_intv)
-                    || !float.TryParse(text_cookingdecay_rate.Text, out decay_rate)
-                    || !float.TryParse(text_cookingdecay_limit.Text, out decay_limit))
-                {
-                    errMsg = "请输入正确的制作时间衰减配置";
-                    break;
-                }
-                autoGenConfig.cookingDecay.interval = decay_intv;
-                autoGenConfig.cookingDecay.rate = decay_rate;
-                autoGenConfig.cookingDecay.limit = decay_limit;
-
-                int min, max;
-                if (!int.TryParse(text_litterinterval_start.Text, out min)
-                    || !int.TryParse(text_litterinterval_end.Text, out max))
-                {
-                    errMsg = "请输入正确的扔垃圾间隔";
-                    break;
-                }
-                autoGenConfig.litterInterval.min = min;
-                autoGenConfig.litterInterval.max = max;
-
-                if (!int.TryParse(text_brokeninterval_start.Text, out min)
-                    || !int.TryParse(text_brokeninterval_end.Text, out max))
-                {
-                    errMsg = "请输入正确的厨具损坏间隔";
-                    break;
-                }
-                autoGenConfig.brokenInterval.min = min;
-                autoGenConfig.brokenInterval.max = max;
-
-                string jsonStr = text_autogen_food_list.Text;
-                if (!string.IsNullOrEmpty(jsonStr))
-                {
-                    autoGenConfig.foodWeightList = JsonConvert.DeserializeObject<Dictionary<string, float>>(jsonStr);
-                }
-                if (autoGenConfig.foodWeightList.Count == 0)
-                {
-                    errMsg = "请指定食物集";
-                    break;
-                }
-
-                jsonStr = text_auto_customer_list.Text;
-                if (!string.IsNullOrEmpty(jsonStr))
-                {
-                    autoGenConfig.customerList = JsonConvert.DeserializeObject<List<string>>(jsonStr);
-                }
-                if (autoGenConfig.customerList.Count == 0)
-                {
-                    errMsg = "请指定顾客集";
-                    break;
-                }
-
-                autoGenConfig.random_customer_requirement = check_autogen_random_customer.Active;
-                autoGenConfig.random_food_requirement = check_autogen_random_food.Active;
-                autoGenConfig.random_smile_requirement = check_autogen_random_smile.Active;
-                autoGenConfig.any_customer_requirement = check_autogen_any_customer.Active;
-
-
-            } while (false);
-
-            if (errMsg != null)
-            {
-                return null;
-            }
-            return autoGenConfig;
-        }
-
-        protected void OnBtnAutogenGenerateClicked(object sender, EventArgs e)
-        {
-            string errMsg;
-
-            AutoGenConfig autoGenConfig = GetAutogenConfig(out errMsg);
-            if (errMsg == null)
-            {
-                LevelDataGenerator generator = new LevelDataGenerator();
-                LevelData lvlData = generator.GenerateLevelData(autoGenConfig);
-                if (lvlData != null)
-                {
-                    m_curLevelData = lvlData;
-                    ShowData();
-                }
-            }
-            else
-            {
-                MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Close,
-                                                  errMsg);
-                dlg.Run();
-                dlg.Destroy();
             }
         }
 
-        protected void OnButtonAutogenRequirementsClicked(object sender, EventArgs e)
-        {
-            string errMsg;
-            AutoGenConfig autoGenConfig = GetAutogenConfig(out errMsg);
-            if (errMsg == null)
-            {
-                LevelDataGenerator generator = new LevelDataGenerator();
-                List<string> scoreList;
-                Requirements requirements;
-                if (generator.GenerateRequirements(m_curLevelData.orders, autoGenConfig, out scoreList, out requirements))
-                {
-                    m_curLevelData.requirements = requirements;
-                    m_curLevelData.scoreList = scoreList;
-                    ShowData();
-                }
-            }
-            else
-            {
-                MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Close,
-                                                  errMsg);
-                dlg.Run();
-                dlg.Destroy();
-            }
-        }
+        //protected void OnButtonEditAutogenFoodListClicked(object sender, EventArgs e)
+        //{
+        //    Dictionary<string, float> foodWeights = null;
+        //    string jsonStr = text_autogen_food_list.Text;
+        //    if (!string.IsNullOrEmpty(jsonStr))
+        //    {
+        //        foodWeights = JsonConvert.DeserializeObject<Dictionary<string, float>>(jsonStr);
+        //    }
+        //    FoodWeightSelectDialog dlg = new FoodWeightSelectDialog(this, m_curRestData.food_list, foodWeights);
+        //    if (dlg.Run() == (int)ResponseType.Ok)
+        //    {
+        //        foodWeights = dlg.FoodWeights;
+        //        if (foodWeights != null && foodWeights.Count > 0)
+        //        {
+        //            text_autogen_food_list.Text = JsonConvert.SerializeObject(foodWeights);
+        //        }
+        //        else
+        //        {
+        //            text_autogen_food_list.Text = "";
+        //        }
+        //    }
+        //    dlg.Destroy();
+        //}
+
+        //protected void OnButtonEditAutogenCustomerListClicked(object sender, EventArgs e)
+        //{
+        //    List<string> customerList = new List<string>(m_curRestData.customer_list);
+        //    customerList.AddRange(m_curRestData.special_customer_list);
+
+        //    List<string> selCustomers = null;
+        //    string jsonStr = text_auto_customer_list.Text;
+        //    if (!string.IsNullOrEmpty(jsonStr))
+        //    {
+        //        selCustomers = JsonConvert.DeserializeObject<List<string>>(jsonStr);
+        //    }
+
+        //    CustomerSelectDialog dlg = new CustomerSelectDialog(this, customerList, selCustomers);
+        //    if (dlg.Run() == (int)ResponseType.Ok)
+        //    {
+        //        selCustomers = dlg.SelectedCustomers;
+
+        //        if (selCustomers != null && selCustomers.Count > 0)
+        //        {
+        //            text_auto_customer_list.Text = JsonConvert.SerializeObject(selCustomers);
+        //        }
+        //        else
+        //        {
+        //            text_auto_customer_list.Text = "";
+        //        }
+        //    }
+        //    dlg.Destroy();
+        //}
+
+        //protected AutoGenConfig GetAutogenConfig(out string errMsg)
+        //{
+        //    errMsg = null;
+        //    AutoGenConfig autoGenConfig = new AutoGenConfig();
+        //    do
+        //    {
+        //        autoGenConfig.type = (LevelType)(combobox_config_type.Active + 1);
+        //        autoGenConfig.difficulty = combobox_autogen_difficulty.Active + 1;
+        //        if (!int.TryParse(text_config_total.Text, out autoGenConfig.total) || autoGenConfig.total <= 0)
+        //        {
+        //            errMsg = "输入的关卡参数值有误！";
+        //            break;
+        //        }
+
+        //        if (!int.TryParse(text_config_max_order.Text, out autoGenConfig.maxOrder) || autoGenConfig.maxOrder <= 0)
+        //        {
+        //            errMsg = "输入的最大订单数有误！";
+        //            break;
+        //        }
+
+        //        if (!int.TryParse(text_autogen_specialnum.Text, out autoGenConfig.specialNum) || autoGenConfig.specialNum < 0)
+        //        {
+        //            errMsg = "输入的特殊顾客数量有误！";
+        //            break;
+        //        }
+
+        //        if (!int.TryParse(text_config_full_patience.Text, out autoGenConfig.fullPatienceNum) || autoGenConfig.fullPatienceNum < 0)
+        //        {
+        //            errMsg = "满耐心值有误！";
+        //            break;
+        //        }
+
+        //        string[] strArr = text_config_first_arrivals.Text.Split(',');
+        //        if (strArr.Length != autoGenConfig.maxOrder)
+        //        {
+        //            errMsg = "输入的首次来客时间个数与最大订单数不符";
+        //            break;
+        //        }
+        //        for (int i = 0; i < strArr.Length; ++i)
+        //        {
+        //            float time;
+        //            if (!float.TryParse(strArr[i], out time))
+        //            {
+        //                errMsg = "输入的首次来客时间有误！";
+        //                break;
+        //            }
+        //            autoGenConfig.firstArrivals.Add(time);
+        //        }
+        //        if (errMsg != null)
+        //        {
+        //            break;
+        //        }
+
+        //        float fNum;
+        //        if (!float.TryParse(text_config_order_interval_start.Text, out fNum) || fNum < 1e-6)
+        //        {
+        //            errMsg = "请输入正确的最小订单间隔时间";
+        //            break;
+        //        }
+        //        autoGenConfig.orderInterval.min = fNum;
+
+        //        if (!float.TryParse(text_config_order_interval_end.Text, out fNum) || fNum < 1e-6)
+        //        {
+        //            errMsg = "请输入正确的最大订单间隔时间";
+        //            break;
+        //        }
+        //        autoGenConfig.orderInterval.max = fNum;
+
+
+        //        float decay_intv, decay_rate, decay_limit;
+        //        if (!float.TryParse(text_waitdecay_interval.Text, out decay_intv)
+        //            || !float.TryParse(text_waitdecay_rate.Text, out decay_rate)
+        //            || !float.TryParse(text_waitdecay_limit.Text, out decay_limit))
+        //        {
+        //            errMsg = "请输入正确的等待时间衰减配置";
+        //            break;
+        //        }
+        //        autoGenConfig.waitDecay.interval = decay_intv;
+        //        autoGenConfig.waitDecay.rate = decay_rate;
+        //        autoGenConfig.waitDecay.limit = decay_limit;
+
+        //        //if (!float.TryParse(text_burndecay_interval.Text, out decay_intv)
+        //        //    || !float.TryParse(text_burndecay_rate.Text, out decay_rate)
+        //        //    || !float.TryParse(text_burndecay_limit.Text, out decay_limit))
+        //        //{
+        //        //    errMsg = "请输入正确的烧焦时间衰减配置";
+        //        //    break;
+        //        //}
+        //        //autoGenConfig.burnDecay.interval = decay_intv;
+        //        //autoGenConfig.burnDecay.rate = decay_rate;
+        //        //autoGenConfig.burnDecay.limit = decay_limit;
+
+        //        if (!float.TryParse(text_orderdecay_interval.Text, out decay_intv)
+        //            || !float.TryParse(text_orderdecay_rate.Text, out decay_rate)
+        //            || !float.TryParse(text_orderdecay_limit.Text, out decay_limit))
+        //        {
+        //            errMsg = "请输入正确的来客时间衰减配置";
+        //            break;
+        //        }
+        //        autoGenConfig.orderDecay.interval = decay_intv;
+        //        autoGenConfig.orderDecay.rate = decay_rate;
+        //        autoGenConfig.orderDecay.limit = decay_limit;
+
+        //        if (!float.TryParse(text_cookingdecay_interval.Text, out decay_intv)
+        //            || !float.TryParse(text_cookingdecay_rate.Text, out decay_rate)
+        //            || !float.TryParse(text_cookingdecay_limit.Text, out decay_limit))
+        //        {
+        //            errMsg = "请输入正确的制作时间衰减配置";
+        //            break;
+        //        }
+        //        autoGenConfig.cookingDecay.interval = decay_intv;
+        //        autoGenConfig.cookingDecay.rate = decay_rate;
+        //        autoGenConfig.cookingDecay.limit = decay_limit;
+
+        //        int min, max;
+        //        if (!int.TryParse(text_litterinterval_start.Text, out min)
+        //            || !int.TryParse(text_litterinterval_end.Text, out max))
+        //        {
+        //            errMsg = "请输入正确的扔垃圾间隔";
+        //            break;
+        //        }
+        //        autoGenConfig.litterInterval.min = min;
+        //        autoGenConfig.litterInterval.max = max;
+
+        //        if (!int.TryParse(text_brokeninterval_start.Text, out min)
+        //            || !int.TryParse(text_brokeninterval_end.Text, out max))
+        //        {
+        //            errMsg = "请输入正确的厨具损坏间隔";
+        //            break;
+        //        }
+        //        autoGenConfig.brokenInterval.min = min;
+        //        autoGenConfig.brokenInterval.max = max;
+
+        //        string jsonStr = text_autogen_food_list.Text;
+        //        if (!string.IsNullOrEmpty(jsonStr))
+        //        {
+        //            autoGenConfig.foodWeightList = JsonConvert.DeserializeObject<Dictionary<string, float>>(jsonStr);
+        //        }
+        //        if (autoGenConfig.foodWeightList.Count == 0)
+        //        {
+        //            errMsg = "请指定食物集";
+        //            break;
+        //        }
+
+        //        jsonStr = text_auto_customer_list.Text;
+        //        if (!string.IsNullOrEmpty(jsonStr))
+        //        {
+        //            autoGenConfig.customerList = JsonConvert.DeserializeObject<List<string>>(jsonStr);
+        //        }
+        //        if (autoGenConfig.customerList.Count == 0)
+        //        {
+        //            errMsg = "请指定顾客集";
+        //            break;
+        //        }
+
+        //        autoGenConfig.random_customer_requirement = check_autogen_random_customer.Active;
+        //        autoGenConfig.random_food_requirement = check_autogen_random_food.Active;
+        //        autoGenConfig.random_smile_requirement = check_autogen_random_smile.Active;
+        //        autoGenConfig.any_customer_requirement = check_autogen_any_customer.Active;
+
+
+        //    } while (false);
+
+        //    if (errMsg != null)
+        //    {
+        //        return null;
+        //    }
+        //    return autoGenConfig;
+        //}
+
+        //protected void OnBtnAutogenGenerateClicked(object sender, EventArgs e)
+        //{
+        //    string errMsg;
+
+        //    AutoGenConfig autoGenConfig = GetAutogenConfig(out errMsg);
+        //    if (errMsg == null)
+        //    {
+        //        LevelDataGenerator generator = new LevelDataGenerator();
+        //        LevelData lvlData = generator.GenerateLevelData(autoGenConfig);
+        //        if (lvlData != null)
+        //        {
+        //            m_curLevelData = lvlData;
+        //            ShowData();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Close,
+        //                                          errMsg);
+        //        dlg.Run();
+        //        dlg.Destroy();
+        //    }
+        //}
+
+        //protected void OnButtonAutogenRequirementsClicked(object sender, EventArgs e)
+        //{
+        //    string errMsg;
+        //    AutoGenConfig autoGenConfig = GetAutogenConfig(out errMsg);
+        //    if (errMsg == null)
+        //    {
+        //        LevelDataGenerator generator = new LevelDataGenerator();
+        //        List<string> scoreList;
+        //        Requirements requirements;
+        //        if (generator.GenerateRequirements(m_curLevelData.orders, autoGenConfig, out scoreList, out requirements))
+        //        {
+        //            m_curLevelData.requirements = requirements;
+        //            m_curLevelData.scoreList = scoreList;
+        //            ShowData();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        MessageDialog dlg = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Close,
+        //                                          errMsg);
+        //        dlg.Run();
+        //        dlg.Destroy();
+        //    }
+        //}
     }
 }

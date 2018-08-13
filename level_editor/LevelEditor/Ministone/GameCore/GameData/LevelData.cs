@@ -271,7 +271,7 @@ namespace Ministone.GameCore.GameData
             set { m_specialOrders = value; }
         }
 
-        public List<CustomerOrder> anyfoodOrders
+        public List<CustomerOrder> randomfoodOrders
         {
             get { return m_anyfoodOrders; }
             set { m_anyfoodOrders = value; }

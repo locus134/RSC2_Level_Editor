@@ -87,7 +87,7 @@ namespace Ministone.GameCore.GameData
                 string ingredients = reader.GetStringSafe(column++);
                 if(ingredients.Length > 0)
                 {
-                    foodData.ingredients = new List<string>(ingredients.Split(';')); 
+                    foodData.ingredients = new List<string>(ingredients.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)); 
                 }
 
                 m_foodList.Add(foodData);
